@@ -21,17 +21,17 @@
 				//convert plaintext from Utf8 to binary array
 				var msg = CryptoJS.enc.Utf8.parse(pt);				
 				//get key
-				var eKey = $('#eKey').val();
+				var eKey = $('#key').val();
 				//create hash of key
 				var key = CryptoJS.SHA256(eKey);
 				//create random IV
 				var iv = CryptoJS.lib.WordArray.random(24);
 				//encrypt the binary array message using hash of key in CBC mode with fixed IV
 				var ciphertext = CryptoJS.AES.encrypt(msg, key, { mode: CryptoJS.mode.CBC, iv: iv });
-				//get url
-				var url = $('#url').val();
+				//get description
+				var description = $('#description').val();
 				//output inputs and ciphertext
-				$('#stored').html('{' + pt + '} stored for ' + url +' as ' + CryptoJS.enc.Base64.stringify(iv) + ciphertext);
+				$('#stored').html('Information successfully stored for ' + description +' as ' + CryptoJS.enc.Base64.stringify(iv) + ciphertext);
 				
 				var audio = dataToAudio(url, ciphertext, iv);
 				dataFromAudio(audio);
@@ -93,10 +93,10 @@
 	</head>
 	<body>
 	
-		<input type="text" class="input-box" id="eKey" placeholder="Key"></input><br>
-		<input type="text" class="input-box" id="url" placeholder="URL"></input><br>
-		<input type="text" class="input-box" id="username" placeholder="User Name"></input><br>
-		<input type="text" class="input-box" id="password" placeholder="Password"></input><br>
+		<input type="password" class="input-box" id="key" placeholder="Key"></input><br>
+		<input type="text" class="input-box" id="description" placeholder="Description"></input><br>
+		<input type="password" class="input-box" id="username" placeholder="User Name"></input><br>
+		<input type="password" class="input-box" id="password" placeholder="Password"></input><br>
 		<button class="button-style" onclick="encrypt()">Store</button><br>
 		<p id="stored" class="message"></p><br>
 		<p id="audioResult" class="message"></p><br>		

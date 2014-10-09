@@ -14,7 +14,7 @@
 			function decrypt()
 			{
 				//get url
-				var url = $('#dUrl').val();
+				var description = $('#description').val();
 				//get ciphertext
 				var ct = $('#ct').val();
 				//get key
@@ -37,8 +37,8 @@
 		
 	</head>
 	<body>
-		<input type="text" class="input-box" id="dKey" placeholder="Key"></input><br>
-		<input type="text" class="input-box" id="dUrl" placeholder="URL"></input><br>
+		<input type="password" class="input-box" id="dKey" placeholder="Key"></input><br>
+		<input type="text" class="input-box" id="description" placeholder="Description"></input><br>
 		<input type="text" class="input-box" id="ct" placeholder="Ciphertext"></input><br>
 		<button class="button-style" onclick="decrypt()">Retrieve</button><br>
 		<p class="message" id="retrieved"></p>
