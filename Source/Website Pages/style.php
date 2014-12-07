@@ -7,18 +7,18 @@
 <head>
 	<style>
 		body{
-			background: url(logo.png);
+			background: url(created4.png);
 			font: 13px 'trebuchet MS', Arial, Helvetica;
 		}
 		
 		.text{
 			/*BACKGROUND*/
-			background-image: url(background.png);
+			background-image: url(created.png);
 			
 			/*BORDER*/
 			border-width: 5px;
 			border-style: solid;
-			border-color: #4E0087;
+			border-color: #F2C409;
 			/*adds shadow*/
 			box-shadow: 0px 5px 5px #444444;
 			-moz-box-shadow: 0px 5px 5px #444444;
@@ -38,7 +38,7 @@
   			padding: 10px;
   			
   			/*TEXT*/
-  			color: #E5DB08;
+  			color: #F2C409;
   			font-family: cursive;
 		}
 		
@@ -47,11 +47,11 @@
 			/*TEXT*/
 			font-weight: bold; 
 			text-align: center;
-			color: #E5DB08;
+			color: #F2C409;
 			
 			/*BACKGROUND*/
 			/*color*/
-			background-color: #4E0087;
+			background-color: #4a0087;
 			/*shadow*/
 			box-shadow: 0px 5px 5px #444444;
 			-moz-box-shadow: 0px 5px 5px #444444;
@@ -93,7 +93,7 @@
 		.button-style{
 			/*TEXT*/
 			font-weight: bold; 
-			color: #E5DB08;
+			color: #F2C409;
 			
 			/*BACKGROUND*/
 			/*color*/
@@ -125,14 +125,17 @@
 			padding: 0;
 			list-style: none;
 		}
-		
+		/*THE STUFF I AM LOOING T CHANGE IS HERE  DISREGARD THSI COMMENT*/
 		#menu {
 			width: 560px;
 			margin: 0px auto;
 			border: 1px solid #222;
-			background-color: #4E0087;
-			background-image: linear-gradient(#444, #4E0087);
+			/*background-color: #4E0087;*/
+			background-image: url(created.png);
 			border-radius: 6px;
+			border-width:2px;
+			border-style: solid;
+			border-color: #F2C409;
 			box-shadow: 0 1px 1px #777, 0 1px 0 #666 inset;
 			float: center;
 		}
@@ -161,20 +164,15 @@
 		#menu a {
 			float: left;
 			padding: 12px 30px;
-			color: #BBB;
+			color: #F2C409;
 			text-transform: uppercase;
 			font: bold 12px Arial, Helvetica;
 			text-decoration: none;
 			text-shadow: 0 1px 0 #000;
 		}
 		
-		#menu li:hover > a {
-			color: #E5DB08;
-		}
 		
-		*html #menu li a:hover { /* IE6 only */
-			color: #E5DB08;
-		}
+		
 		
 		#menu ul {
 			margin: 20px 0 0 0;
@@ -191,13 +189,6 @@
 			border-radius: 3px;
 			transition: all .2s ease-in-out;  
 		}
-	
-		#menu li:hover > ul {
-			opacity: 1;
-			visibility: visible;
-			margin: 0;
-		}
-		
 		#menu ul ul {
 			top: 0;
 			left: 150px;
@@ -232,8 +223,8 @@
 		
 		#menu ul a:hover {
 			//can add these in if we want, looks weird right now because can't change the letter color too
-			//background-color: #E5DB08;
-			//background-image: linear-gradient(#9E9706, #E5DB08);
+			background-color: #444444;
+			background-image: linear-gradient(#AAAAAA, #BBBBBB);
 		}
 		
 		/*can take this and some above here out if we don't have sub menues*/
@@ -267,7 +258,7 @@
 		
 		#menu ul ul li:first-child a:hover:after {
 			border-right-color: #444; 
-			border-bottom-color: transparent; 	
+			border-bottom-color: #444; 	
 		}
 		
 		#menu ul li:last-child > a {
@@ -307,7 +298,7 @@
 				border: 1px solid #222;
 				color: #fafafa;
 				font-weight: bold;
-				background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAMAAADeWG8gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyBpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBXaW5kb3dzIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjE2QjAxNjRDOUNEOTExRTE4RTNFRkI1RDQ2MUYxOTQ3IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjE2QjAxNjREOUNEOTExRTE4RTNFRkI1RDQ2MUYxOTQ3Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MTZCMDE2NEE5Q0Q5MTFFMThFM0VGQjVENDYxRjE5NDciIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MTZCMDE2NEI5Q0Q5MTFFMThFM0VGQjVENDYxRjE5NDciLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz42AEtnAAAABlBMVEX///////9VfPVsAAAAAnRSTlP/AOW3MEoAAAAWSURBVHjaYmAgFzBiACKFho6NAAEGAD07AG1pn932AAAAAElFTkSuQmCC) no-repeat 10px center, linear-gradient(#444, #4E0087);
+				/*background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAMAAADeWG8gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyBpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBXaW5kb3dzIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjE2QjAxNjRDOUNEOTExRTE4RTNFRkI1RDQ2MUYxOTQ3IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjE2QjAxNjREOUNEOTExRTE4RTNFRkI1RDQ2MUYxOTQ3Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MTZCMDE2NEE5Q0Q5MTFFMThFM0VGQjVENDYxRjE5NDciIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MTZCMDE2NEI5Q0Q5MTFFMThFM0VGQjVENDYxRjE5NDciLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz42AEtnAAAABlBMVEX///////9VfPVsAAAAAnRSTlP/AOW3MEoAAAAWSURBVHjaYmAgFzBiACKFho6NAAEGAD07AG1pn932AAAAAElFTkSuQmCC) no-repeat 10px center, linear-gradient(#444, #4E0087);*/
 				border-radius: 6px;
 				box-shadow: 0 1px 1px #777, 0 1px 0 #666 inset;
 			}
@@ -370,7 +361,7 @@
 			}
 	
 			#menu a:hover{
-				color: #fafafa;
+				color: #F2C409;
 			}	
 	
 			#menu ul a{
@@ -434,7 +425,7 @@
 
 <body>
 	<center>
-		<img src="logo.png" height=60px align="middle">
+		<img src="logoColorized.png" height=200px align="middle">
 	</center>
 	<nav id="menu-wrap">    
 	<ul id="menu">
