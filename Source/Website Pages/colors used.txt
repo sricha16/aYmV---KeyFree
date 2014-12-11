@@ -1,0 +1,8 @@
+F2C409     -- Orange Gold Font
+
+E5DB08     -- Old Font Color.  
+4E0087     -- Purple border color
+
+9E9706     -- Poop Green Gradient
+3b3b3b     -- Charcoal Grey
+fafafa     -- White
