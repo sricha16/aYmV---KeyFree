@@ -2,16 +2,16 @@
      used to enter sensitive information and store it on the device
      encrypts the sensitive information and sends it to the device via the headphone jack -->
 <!-- audio listening code modified from http://typedarray.org/wp-content/projects/WebAudioRecorder/script.js -->
-<!-- sleep function from http://devcheater.com/ -->
+<!--riffwave library from http://codebase.es/riffwave/riffwave.js" -->
      
 <!DOCTYPE HTML>
 <html>
 	<head>
 		<?php include 'style.php';?>
-		<script src="http://codebase.es/riffwave/riffwave.js"></script>
+		<script src="riffwave.js"></script>
 		<script src="crypto-js/aes.js"></script>
 		<script src="crypto-js/sha256.js"></script>
-		<script src="jquery-2.1.1.min.js"></script>	
+		<script src="jquery-2.1.1.min.js"></script>
 		
 		<script>
 			// variables
@@ -70,7 +70,29 @@
 			
 			function dataToAudio(description, ciphertext, iv )
 			{
-				var data = []; // just an array
+			
+				var data = [],
+					sampleRateHz = 44100,
+					storedData = [description, ciphertext,iv],
+				
+					baseFreq = function(index){
+						var r = 2*Math.PI * 440 * Math.pow(2,(storedData[index]-69)/12.0) / sampleRateHz;
+						return r;
+					};
+				for(var j=0; j<2*sampleRateHz; j++){
+					var l = 2*sampleRateHz / storedData.length;
+					data[j] = 64 + 32 * Math.round(Math.sin(baseFreq(Math.round(j/l))*j));
+				}
+				
+				var wave = new RIFFWAVE();
+				wave.header.sampleRate = sampleRateHz;
+				wave.header.numChannels = 1;
+				wave.Make(data);
+				var audio = new Audio();
+				audio.src = wave.dataURI;
+				audio.textContent = storedData;
+				return audio;
+				/*var data = []; // just an array
 				data[0] = description;
 				data[1] = ciphertext;
 				data[2] = iv;
@@ -78,6 +100,7 @@
 				var audio = new Audio(wave.dataURI); // create the HTML5 audio element
 				audio.textContent = wave.data;
 				return audio
+				*/
 					
 			}
 			
@@ -246,12 +269,6 @@
 				// we connect the recorder
 				volume.connect (recorder);
 				recorder.connect (context.destination); 
-			}
-			
-			function sleep(milliSeconds)
-			{
-				var startTime = new Date().getTime(); // get the current time
-				while (new Date().getTime() < startTime + milliSeconds); // hog cpu
 			}
 											
 		</script>
