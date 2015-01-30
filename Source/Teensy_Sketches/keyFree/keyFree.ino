@@ -5,8 +5,8 @@
 //#include "entry.h"
 //#include "retrieval.h"
 
-boolean micPluggedIn = false;
-boolean audioPluggedIn = true;
+boolean micPluggedIn = true;
+boolean audioPluggedIn = false;
 
 const int myInput = AUDIO_INPUT_MIC;
 //const int myInput = AUDIO_INPUT_LINEIN;
@@ -117,6 +117,8 @@ void setupEntry(){
       delay(500);
     }
   } 
+  
+  audioShield.volume(0.2);
 }
 
 void startRecording() {
