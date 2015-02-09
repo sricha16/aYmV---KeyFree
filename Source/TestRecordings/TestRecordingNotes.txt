@@ -1,0 +1,17 @@
+// These are all recordings of some Beatles songs from youtube.
+test.RAW - simple test file
+testCon.RAW - one recording, with another recording added directly after it
+testVol.RAW - has the volume lowered
+
+// All the teensy recordings were done by starting the recording, submitting the data on the website which causes it to play it, and then stopping the recordings.
+// So there is some time on either end where there shouldn't be anything, then a pop, and then nothing again.
+// When I play it from the teensy, however, it is more the opposite where there is some noise and then it stops and then noise again.
+// When we just play it from the website, we just get a pop for the signal.
+teensyV.RAW - is a recording of an output from website with volume lowered
+teensyC.RAW - one recording from website with another one added directly after it
+teensy.RAW - a simple recording from website
+
+// Notes:
+// We did the volume one to see if it would be any better not being blasted, but I doubt this affects the recording, and just the playing back on the teensy so there may not be a real difference.
+// Both the Con files mean that instead of deleting the file and making a new one, we just opened it again and continue to record to the end of it.
+// This was added because we are planing on storing all of the data we record in one big file, one after the other, so I figured I would include it to see if anything strange came of it.
