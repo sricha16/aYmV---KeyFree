@@ -1,0 +1,17 @@
+// TestRecordingNotes2.txt
+// Notes on the recorded files
+
+// These are all recording for Creedence Clearwater Revival - Lookin' Out My Back Door
+// The mic gain is in dB and can range from 0 to 63
+// The quality sounds the best at 0 dB, but the others are included for confirmation
+CCR0.RAW - a recording with the mic gain set to 0 dB
+CCR10.RAW - a recording with the mic gain set to 10 dB
+CCR20.RAW - a recording with the mic gain set to 20 dB
+
+// The following are recordings from the output of the website
+// They are all done with mic gain at 0 dB
+// There are two recordings simply to have two samples
+// They are again recorded by starting the recording, activating the output on the website, and then ending the recording
+// So there should be some time at the beginning and ending of the recording that does not relate to the output of the website
+KF0.RAW - the first sample
+KF1.RAW - the second sample
