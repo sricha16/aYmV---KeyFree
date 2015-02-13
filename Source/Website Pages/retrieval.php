@@ -57,17 +57,21 @@
 				//output decrypted values
 				//$('#retrieved').html(' IV: ' + tempIV);
 				$('#retrieved').html(msg);
+				
+				dataFromAudio();
 			}
 			
 			//this is never being called
-			function dataFromAudio(audio)
+			function dataFromAudio()
 			{
 				startRecording();
 				//alert('playing audio');
-				audio.play();	
-				//alert('audio over');			
-				audio.onended = function(){buildWav()};
-				//alert('returned from buildwav');
+				//audio.play();	
+				//alert('audio over');		
+				//TODO: figure out when audio stops playing to stop recording	
+				//audio.onended = function(){buildWav()};
+				//sleep(5000);
+				buildWav();
 				//sleep(1000);
 				//buildWav();															
 				$('#audioResult').html('Pulling information back out of audio: ' + audio.textContent);				
@@ -97,9 +101,11 @@
 			        var rightBuffer = mergeBuffers ( rightchannel, recordingLength );
 			        // we interleave both channels together
 			        var interleaved = interleave ( leftBuffer, rightBuffer );
+			        var meowmix = CryptoJS.enc.Utf8.stringify(interleaved);
 			        
 			        // we create our wav file
 			        var buffer = new ArrayBuffer(44 + interleaved.length * 2);
+			        
 			        var view = new DataView(buffer);
 			        
 			        // RIFF chunk descriptor
@@ -131,7 +137,10 @@
 			        
 			        // our final binary blob
 			        var blob = new Blob ( [ view ], { type : 'audio/wav' } );
-			        
+				alert('here comes the blob');
+			        alert(blob.size);
+			        alert('view bytelength');
+			        alert(view.byteLength);
 			        // let us save it locally
 			        //outputElement.innerHTML = 'Handing off the file now...';
 			        var url = (window.URL || window.webkitURL).createObjectURL(blob);
@@ -231,10 +240,16 @@
 		
 	</head>
 	<body>
-		<input type="password" class="input-box" id="dKey" placeholder="Key"></input><br>
-		<input type="text" class="input-box" id="description" placeholder="Description"></input><br>
-		<input type="text" class="input-box" id="ct" placeholder="Ciphertext"></input><br>
-		<button class="button-style" onclick="decrypt()">Retrieve</button><br>
-		<p class="message" id="retrieved"></p>
+		<p class = "text"> 
+			Instructions go in this box
+		</p>
+		<br/>
+		<p class = "text"> 
+			<input type="password" class="input-box" id="dKey" placeholder="Key"></input><br>
+			<input type="text" class="input-box" id="description" placeholder="Description"></input><br>
+			<input type="text" class="input-box" id="ct" placeholder="Ciphertext"></input><br>
+			<button class="button-style" onclick="decrypt()">Retrieve</button><br>
+			<p class="message" id="retrieved"></p>
+		</p>
 	</body>
 </html>

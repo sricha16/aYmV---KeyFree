@@ -16,11 +16,12 @@
 		<p class="text">Key-Free is a revolutionary product that securely stores your data on a device you control.  </p>
 		<br><br> 	
 		<p class="text">Here is the current progress of the Key-Free system: <br>
-			<img src="Photo 1.jpg" width="280" height="400" title="12/5/2014" alt="Logo of a company" />
+			<img src="Photo_2.jpg" width="560" height="315" title="12/5/2014" alt="Logo of a company" /></p>
 
                         
 		<br><br>
-		<p class="text">Reviews of Key-Free:   </p>
+		<p class="text">Demo Video<br>
+			<iframe width="560" height="315" src="https://www.youtube.com/embed/OAqbk4DVV5Q" frameborder="0" allowfullscreen></iframe></p>
 	
 	</body>
 </html>

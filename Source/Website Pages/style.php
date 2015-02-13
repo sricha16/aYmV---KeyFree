@@ -39,7 +39,7 @@
   			
   			/*TEXT*/
   			color: #F2C409;
-  			font-family: cursive;
+  			font-family: fantasy;  // WAs CURSIVE LOLS 
 		}
 		
 		.message{
@@ -156,8 +156,8 @@
 		
 		#menu li {
 			float: left;
-			border-right: 1px solid #222;
-			box-shadow: 1px 0 0 #444;
+			border-right: 0px solid #222;
+			box-shadow: 0px 0 0 #444;     // EDIT THIS LINE FOR THE LINES BETWEEN MENU
 			position: relative;
 		}
 		
@@ -439,7 +439,7 @@
 		<li><a href="retrieval.php" >Retrieval</a></li>
 		<li><a href="entry.php" >Entry</a></li>
                 <li><a href="aboutus.php" >About Us</a></li>
-                <li style="border-right: 0px"><a href="help.php" >Help</a></li>
+                <li><a href="help.php">Help</a></li>
 	</ul>
 	</nav><br><br>
 	

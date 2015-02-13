@@ -1,8 +1,8 @@
 <!-- entry.php
      used to enter sensitive information and store it on the device
      encrypts the sensitive information and sends it to the device via the headphone jack -->
-<!-- audio listening code modified from http://typedarray.org/wp-content/projects/WebAudioRecorder/script.js -->
 <!--riffwave library from http://codebase.es/riffwave/riffwave.js" -->
+<!-- audio listening code modified from http://typedarray.org/wp-content/projects/WebAudioRecorder/script.js -->
      
 <!DOCTYPE HTML>
 <html>
@@ -38,7 +38,7 @@
 			    alert('No mic input. Make sure your Key-Free device is plugged into the mic jack');
 			    });
 			} else alert('getUserMedia not supported in this browser.');
-		
+			
 			function encrypt()
 			{
 				//get message
@@ -59,10 +59,6 @@
 				$('#stored').html('Information successfully stored for ' + description +' as ' + CryptoJS.enc.Base64.stringify(iv) + ciphertext);
 				
 				var audio = dataToAudio(description, ciphertext, iv);
-				//startRecording();
-				//alert('recording');
-				//sleep(1000);
-				//alert('done sleeping');
 				dataFromAudio(audio);
 				
 				
@@ -83,7 +79,8 @@
 					var l = 2*sampleRateHz / storedData.length;
 					data[j] = 64 + 32 * Math.round(Math.sin(baseFreq(Math.round(j/l))*j));
 				}
-				
+				alert('data length');
+				alert(data.length);
 				var wave = new RIFFWAVE();
 				wave.header.sampleRate = sampleRateHz;
 				wave.header.numChannels = 1;
@@ -274,15 +271,26 @@
 		</script>
 	</head>
 	<body>
-	
-		<input type="password" class="input-box" id="key" placeholder="Key"></input><br>
-		<input type="text" class="input-box" id="description" placeholder="Description"></input><br>
-		<input type="password" class="input-box" id="username" placeholder="User Name"></input><br>
-		<input type="password" class="input-box" id="password" placeholder="Password"></input><br>
-		<button class="button-style" onclick="encrypt();">Store</button><br>
-		<p id="stored" class="message"></p><br>
-		<p id="audioResult" class="message"></p><br>		
-		<p id="hooray" class="message"></p><br>
+		<p class = "text"> 
+			Instructions go in this box
+		</p>
+		<br/>
+		<p class = "text"> 
+			<input type="password" class="input-box" id="key" placeholder="Key"></input><br>
+			<input type="text" class="input-box" id="description" placeholder="Description"></input><br>
+			<input type="password" class="input-box" id="username" placeholder="User Name"></input><br>
+			<input type="password" class="input-box" id="password" placeholder="Password"></input><br>
+			<button class="button-style" onclick="encrypt();">Store</button><br>
+			<p id="stored" class="message"></p><br>
+			<p id="audioResult" class="message"></p><br>		
+			<p id="hooray" class="message"></p><br>
+		</p>
+		<p class = "text"> 
+			Instructions for verifying Password go here
+			<br/>
+			<button class="button-style" onclick="verify();">Verify Password</button><br>
+		</p>
+		<br/>
 				
 	</body>
 </html>
