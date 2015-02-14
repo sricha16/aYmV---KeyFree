@@ -1,20 +1,21 @@
 <!-- entry.php
      used to enter sensitive information and store it on the device
      encrypts the sensitive information and sends it to the device via the headphone jack -->
-<!--riffwave library from http://codebase.es/riffwave/riffwave.js" -->
 <!-- audio listening code modified from http://typedarray.org/wp-content/projects/WebAudioRecorder/script.js -->
+<!-- base64 to hex code modified from http://stackoverflow.com/questions/23190056/hex-to-base64-converter-for-javascript -->
+<!-- oscillator code modified from https://sigusrone.com/articles/building-a-synth-with-the-web-audio-api-part-one -->
      
 <!DOCTYPE HTML>
 <html>
 	<head>
 		<?php include 'style.php';?>
-		<script src="riffwave.js"></script>
 		<script src="crypto-js/aes.js"></script>
 		<script src="crypto-js/sha256.js"></script>
 		<script src="jquery-2.1.1.min.js"></script>
 		
-		
 		<script>
+			//variables
+			window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			
 			// feature detection 
 			if (!navigator.getUserMedia)
@@ -47,49 +48,124 @@
 				var storage = CryptoJS.enc.Base64.stringify(iv) + ciphertext;
 				$('#stored').html('Information successfully stored for ' + description +' as ' + storage);
 				
-				var hexVal = asciiToHex(storage);
+				var hexVal = b64ToHex(storage);
 				$('#hexVal').html('hex of storage ' + hexVal);
-				var cleanedHexVal = hexCleanup(hexVal);
-				$('#cleanedHexVal ').html('cleanedHexVal of storage ' + cleanedHexVal );
 				
-				genDialTones(cleanedHexVal, 0);
+				alert('about to convert your data! WARNING: if you switch to another tab in your browser, this process will slow down drastically.');
+				genDialTones(hexVal , 0);
 				
 			}			
 			
-			function asciiToHex(storage)
+			function b64ToHex(storage)
 			{
-				var hex = "";
-				for (a = 0; a < storage.length; a++) {
-					//gets the unicode value of the character & converts to hex
-				    hex+=(storage.charCodeAt(a).toString(16));
+				for (var i = 0, bin = atob(storage.replace(/[ \r\n]+$/, "")), hex = ""; i < bin.length; ++i) 
+				{
+					    var tmp = bin.charCodeAt(i).toString(16);
+					    if (tmp.length === 1) tmp = "0" + tmp;
+					    hex += tmp;
 				}
 				return hex;
 			}
 			
-			function hexCleanup (hexVal)
-			{
-				hexVal = hexVal.replace(/e/g,'#');
-				hexVal = hexVal.replace(/f/g,'*');
-				return hexVal ;
+			function genDialTones(hexVal, num)
+			{	
+				var high=0;
+				var low=0;
+				var hexChar = hexVal.charAt(num);
+				switch(hexChar) 
+				{
+				    case '0':
+				        low = 941;
+				        high = 1336;
+				        break;
+				    case '1':
+				        low = 697;
+				        high = 1209;
+				        break;
+				    case '2':
+				        low = 697;
+				        high = 1336;
+				        break;
+				    case '3':
+				        low = 697;
+				        high = 1477;
+				        break;
+				    case '4':
+				        low = 770;
+				        high = 1209;
+				        break;
+				    case '5':
+				        low = 770;
+				        high = 1336;
+				        break;
+				    case '6':
+				        low = 770;
+				        high = 1477;
+				        break;
+				    case '7':
+				        low = 852;
+				        high = 1209;
+				        break;
+				    case '8':
+				        low = 852;
+				        high = 1336;
+				        break;
+				    case '9':
+				        low = 852;
+				        high = 1477;
+				        break;
+				    case 'e':
+				        low = 941;
+				        high = 1477;
+				        break;
+				    case 'f':
+				        low = 941;
+				        high = 1209;
+				        break;
+				    case 'a':
+				        low = 697;
+				        high = 1633;
+				        break;
+				    case 'b':
+				        low = 770;
+				        high = 1633;
+				        break;
+				    case 'c':
+				        low = 852;
+				        high = 1633;
+				        break;
+				    case 'd':
+				        low = 941;
+				        high = 1633;
+				        break;
+				    default:
+				    	alert('breaking!');
+				        break;
+				}
+				playTone(low, high, num, hexVal);
 			}
 			
-			function genDialTones(cleanedHexVal, num)
+			function playTone(low, high, num, hexVal)
 			{
-				var audio = new Audio();
-				var filename = cleanedHexVal.charAt(num);
-				if(filename == "#")
-					filename = "pound";
-				else if (filename == "*")
-					filename = "star";	
-				audio.src = filename + ".mp3";
-				audio.play();
-				audio.onended = function(){playNext(cleanedHexVal, num)};
+				var oscillator = window.audioContext.createOscillator();
+				var osc= window.audioContext.createOscillator();
 				
-			}
-			function playNext(cleanedHexVal, num)
-			{
-				if(num+1 < cleanedHexVal.length)
-					genDialTones(cleanedHexVal, num+1);
+				oscillator.frequency.value = low;
+				oscillator.connect(window.audioContext.destination);
+				//firefox doesn't support .noteOn and .noteOff, but can handle .start and .stop
+				oscillator.start(window.audioContext.currentTime);
+				oscillator.stop(window.audioContext.currentTime + .25);			
+				
+				osc.frequency.value = high;
+				osc.connect(window.audioContext.destination);
+				osc.start(window.audioContext.currentTime);
+				osc.stop(window.audioContext.currentTime + .25);
+				
+				if(num+1 < hexVal.length)
+					setTimeout(function(){ genDialTones(hexVal, num+1); }, 255);
+				else
+					alert('Transfer has completed successfully! :) ');
+					
 			}
 			
 			function success(e)
@@ -111,7 +187,6 @@
 			<button class="button-style" onclick="encrypt();">Store</button><br>
 			<p id="stored" class="message"></p><br>
 			<p id="hexVal" class="message"></p><br>
-			<p id="cleanedHexVal" class="message"></p><br>
 		</p>
 		<p class = "text"> 
 			Instructions for verifying Password go here
@@ -119,6 +194,16 @@
 			<button class="button-style" onclick="verify();">Verify Password</button><br>
 		</p>
 		<br/>
+		<p class = "text"> 
+			Do you want us to generate your password?<br/>
+			<form action="generatePassword.php" method="post">
+    				<input type="checkbox" name="formDoor[]" value="A" />lower case<br />
+				<input type="checkbox" name="formDoor[]" value="B" />UPPER CASE<br />
+				<input type="checkbox" name="formDoor[]" value="C" />numbers<br />
+				<input type="checkbox" name="formDoor[]" value="D" />Special Characters<br />
+   		 		<input type="submit" name="formSubmit" value="Submit" />
+			</form>
+		</p>
 				
 	</body>
 </html>
