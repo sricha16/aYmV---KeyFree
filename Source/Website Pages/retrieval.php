@@ -1,6 +1,8 @@
 <!-- retrieval.php
      portal to retrieve the information from the device-->
 <!-- audio listening code modified from http://typedarray.org/wp-content/projects/WebAudioRecorder/script.js -->
+<!-- hex to base64 conversion modified from http://stackoverflow.com/questions/23190056/hex-to-base64-converter-for-javascript -->
+<!-- the goertzel algorithm implementation by Ben Titcomb @Ravenstine modified from https://github.com/Ravenstine/goertzeljs -->
 
 <!DOCTYPE HTML>
 <html>
@@ -9,21 +11,13 @@
 		<script src="crypto-js/aes.js"></script>
 		<script src="crypto-js/sha256.js"></script>
 		<script src="jquery-2.1.1.min.js"></script>
-		
-		<script>
+		<script src="dtmf.js"></script>
+		<script src="goertzel.js"></script>
+		<script>		
+
 			// variables
-			var leftchannel = [];
-			var rightchannel = [];
-			var recorder = null;
-			var recording = false;
-			var recordingLength = 0;
-			var volume = null;
-			var audioInput = null;
-			var sampleRate = 44100;
-			var audioContext = null;
-			var context = null;
-			var outputElement = document.getElementById('output');
-			var outputString;
+			var output = 0;
+			var b64;
 			
 			// feature detection 
 			if (!navigator.getUserMedia)
@@ -58,182 +52,60 @@
 				//$('#retrieved').html(' IV: ' + tempIV);
 				$('#retrieved').html(msg);
 				
-				dataFromAudio();
 			}
 			
-			//this is never being called
-			function dataFromAudio()
+			function decryptTest()
 			{
-				startRecording();
-				//alert('playing audio');
-				//audio.play();	
-				//alert('audio over');		
-				//TODO: figure out when audio stops playing to stop recording	
-				//audio.onended = function(){buildWav()};
-				//sleep(5000);
-				buildWav();
-				//sleep(1000);
-				//buildWav();															
-				$('#audioResult').html('Pulling information back out of audio: ' + audio.textContent);				
-				$('#hooray').html('format of above is description, encoded data without IV, hex representation of IV (which is base64)');
+				//var description = $('#description').val();
+				var ct = b64;
+				//to get this test to work, make sure you've entered meow as the key on the entry page
+				var dKey = "meow";
+				var key = CryptoJS.SHA256(dKey);
+				var iv = CryptoJS.enc.Base64.parse(ct.substring(0, 32));
+				var ciphertext = ct.substring(32);
+				var message = CryptoJS.AES.decrypt(ciphertext, key, { mode: CryptoJS.mode.CBC, iv: iv });
+				var msg = CryptoJS.enc.Utf8.stringify(message);
+				$('#decrypted').html("decrypted data: " + msg );
 			}
 			
-			function startRecording()
-			{				
-				//alert('starting to record');
-				recording = true;			
-			        // reset the buffers for the new recording
-			        leftchannel.length = rightchannel.length = 0;			        
-			        recordingLength = 0;
-			        //outputElement.innerHTML = 'Recording now...';
-			}
-			
-			function buildWav()
+			function hexToB64()
 			{
-				// we stop recording
-			        recording = false;
-			        //alert('recording done');
-			        
-			        //outputElement.innerHTML = 'Building wav file...';
-			
-			        // we flat the left and right channels down
-			        var leftBuffer = mergeBuffers ( leftchannel, recordingLength );
-			        var rightBuffer = mergeBuffers ( rightchannel, recordingLength );
-			        // we interleave both channels together
-			        var interleaved = interleave ( leftBuffer, rightBuffer );
-			        var meowmix = CryptoJS.enc.Utf8.stringify(interleaved);
-			        
-			        // we create our wav file
-			        var buffer = new ArrayBuffer(44 + interleaved.length * 2);
-			        
-			        var view = new DataView(buffer);
-			        
-			        // RIFF chunk descriptor
-			        writeUTFBytes(view, 0, 'RIFF');
-			        view.setUint32(4, 44 + interleaved.length * 2, true);
-			        writeUTFBytes(view, 8, 'WAVE');
-			        // FMT sub-chunk
-			        writeUTFBytes(view, 12, 'fmt ');
-			        view.setUint32(16, 16, true);
-			        view.setUint16(20, 1, true);
-			        // stereo (2 channels)
-			        view.setUint16(22, 2, true);
-			        view.setUint32(24, sampleRate, true);
-			        view.setUint32(28, sampleRate * 4, true);
-			        view.setUint16(32, 4, true);
-			        view.setUint16(34, 16, true);
-			        // data sub-chunk
-			        writeUTFBytes(view, 36, 'data');
-			        view.setUint32(40, interleaved.length * 2, true);
-			        
-			        // write the PCM samples
-			        var lng = interleaved.length;
-			        var index = 44;
-			        var volume = 1;
-			        for (var i = 0; i < lng; i++){
-			            view.setInt16(index, interleaved[i] * (0x7FFF * volume), true);
-			            index += 2;
-			        }
-			        
-			        // our final binary blob
-			        var blob = new Blob ( [ view ], { type : 'audio/wav' } );
-				alert('here comes the blob');
-			        alert(blob.size);
-			        alert('view bytelength');
-			        alert(view.byteLength);
-			        // let us save it locally
-			        //outputElement.innerHTML = 'Handing off the file now...';
-			        var url = (window.URL || window.webkitURL).createObjectURL(blob);
-			        var link = window.document.createElement('a');
-			        link.href = url;
-			        link.download = 'output.wav';
-			        var click = document.createEvent("Event");
-			        click.initEvent("click", true, true);
-			        link.dispatchEvent(click);
+				//strange problem where a '0' is consistently prepended as the first character.
+				//the following two lines remove that zero.
+				if(output.charAt(0) === '0')
+				    output = output.substr(1);
+				output = output.replace(/#/g,'e');
+				output= output.replace(/\*/g,'f');
+				$('#cleanedHex').html("cleaned hex: " + output);
+				  b64 = btoa(String.fromCharCode.apply(null,
+				    output.replace(/\r|\n/g, "").replace(/([\da-fA-F]{2}) ?/g, "0x$1 ").replace(/ +$/, "").split(" "))
+				  );
+				  $('#b64').html("base64: " + b64);
+				  
+				  decryptTest();
 			}
-			
-			function interleave(leftChannel, rightChannel)
-			{
-				var length = leftChannel.length + rightChannel.length;
-				var result = new Float32Array(length);
-				
-				var inputIndex = 0;
-				
-				for (var index = 0; index < length; )
-				{
-					result[index++] = leftChannel[inputIndex];
-				    	result[index++] = rightChannel[inputIndex];
-				    	inputIndex++;
-				}
-				return result;
-			}
-				
-			function mergeBuffers(channelBuffer, recordingLength)
-			{
-				var result = new Float32Array(recordingLength);
-				var offset = 0;
-				var lng = channelBuffer.length;
-				for (var i = 0; i < lng; i++)
-				{
-					var buffer = channelBuffer[i];
-				    	result.set(buffer, offset);
-				    	offset += buffer.length;
-				}
-				return result;
-			}
-				
-			function writeUTFBytes(view, offset, string)
-			{ 
-				var lng = string.length;
-				for (var i = 0; i < lng; i++)
-				{
-					view.setUint8(offset + i, string.charCodeAt(i));
-				}
-			}
-				
+
 			function success(e)
 			{
-				// creates the audio context
-				audioContext = window.AudioContext || window.webkitAudioContext;
-				context = new audioContext();
-				
-				console.log('succcess');
-				   
-				// creates a gain node
-				volume = context.createGain();
-				
-				// creates an audio node from the microphone incoming stream
+				window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+				var context = new AudioContext();
+				var volume = context.createGain();
 				audioInput = context.createMediaStreamSource(e);
-				
-				// connect the stream to the gain node
 				audioInput.connect(volume);
-				
-				/* From the spec: This value controls how frequently the audioprocess event is 
-				dispatched and how many sample-frames need to be processed each call. 
-				Lower values for buffer size will result in a lower (better) latency. 
-				Higher values will be necessary to avoid audio breakup and glitches */
-				var bufferSize = 2048;
-				recorder = context.createScriptProcessor(bufferSize, 2, 2);
-				//recorder = context.createJavaScriptNode(buffersize, 2, 2);
-				
-				recorder.onaudioprocess = function(e)
-				{
-				    //alert('loop forever!');
-				    if (!recording) return;
-				    var left = e.inputBuffer.getChannelData (0);
-				    var right = e.inputBuffer.getChannelData (1);
-				    // we clone the samples
-				    leftchannel.push (new Float32Array (left));
-				    rightchannel.push (new Float32Array (right));
-				    recordingLength += bufferSize;
-				    console.log('recording');				   
-				    //alert('recorded something');
+				var bufferSize = 512;
+				var recorder = context.createScriptProcessor(bufferSize, 1, 1);
+				var dtmf = new DTMF(context.sampleRate,1.4,6,1,0.0002);
+				//.005
+				dtmf.onDecode = function(value){
+				    output += value;
+				    $('#DTMFinput').html(output);
 				}
-				
-				
-				// we connect the recorder
+				recorder.onaudioprocess = function(e){
+				  var buffer = e.inputBuffer.getChannelData(0);
+				  dtmf.processBuffer(buffer);
+				}
 				volume.connect (recorder);
-				recorder.connect (context.destination); 
+				recorder.connect (context.destination) ;
 			}
 			
 		</script>
@@ -249,7 +121,13 @@
 			<input type="text" class="input-box" id="description" placeholder="Description"></input><br>
 			<input type="text" class="input-box" id="ct" placeholder="Ciphertext"></input><br>
 			<button class="button-style" onclick="decrypt()">Retrieve</button><br>
+			<button class="button-style" onclick="hexToB64()">to base64</button><br>
 			<p class="message" id="retrieved"></p>
+			<p class="message" id="DTMFinput"></p>
+			<p class="message" id="cleanedHex"></p>
+			<p class="message" id="b64"></p>
+			<p class="message" id="decrypted"></p>
+			
 		</p>
 	</body>
 </html>

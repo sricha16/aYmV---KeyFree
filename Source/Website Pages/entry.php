@@ -17,17 +17,6 @@
 			//variables
 			window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			
-			// feature detection 
-			if (!navigator.getUserMedia)
-			    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
-			                  navigator.mozGetUserMedia || navigator.msGetUserMedia;
-			
-			if (navigator.getUserMedia){
-			    navigator.getUserMedia({audio:true}, success, function(e) {
-			    alert('No mic input. Make sure your Key-Free device is plugged into the mic jack');
-			    });
-			} else alert('getUserMedia not supported in this browser.');
-			
 			function encrypt()
 			{
 				//get message
@@ -72,6 +61,7 @@
 				var high=0;
 				var low=0;
 				var hexChar = hexVal.charAt(num);
+
 				switch(hexChar) 
 				{
 				    case '0':
@@ -162,16 +152,11 @@
 				osc.stop(window.audioContext.currentTime + .25);
 				
 				if(num+1 < hexVal.length)
-					setTimeout(function(){ genDialTones(hexVal, num+1); }, 255);
+					setTimeout(function(){ genDialTones(hexVal, num+1); }, 257);
 				else
 					alert('Transfer has completed successfully! :) ');
 					
-			}
-			
-			function success(e)
-			{
-			}
-											
+			}								
 		</script>
 	</head>
 	<body>
