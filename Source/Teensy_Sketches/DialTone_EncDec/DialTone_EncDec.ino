@@ -66,8 +66,11 @@ int mode = 0;  // 0=stopped, 1=recording, 2=playing
 // The file where data is stored
 File frec;
 
+// The file to save the data under the new name
+File fnew;
+
 // Unique filename to store data under
-char * filename;
+char *filename;
 
 // On board LED
 int led = 13;
@@ -87,19 +90,31 @@ void setup() {
   delay(100);
 
   // Configure the tone detectors with the frequency and number
-  // of cycles to match.  These numbers were picked for match
-  // times of approx 30 ms.  Longer times are more precise.
-  row1.frequency(697, 21);  // 30.1291 ms
-  row2.frequency(770, 23);  // 29.8701 ms
-  row3.frequency(852, 25);  // 29.3427 ms
-  row4.frequency(941, 28);  // 29.7556 ms
-  column1.frequency(1209, 36);  // 29.7767 ms
-  column2.frequency(1336, 40);  // 29.9401 ms
-  column3.frequency(1477, 44);  // 29.7901 ms
-  column4.frequency(1633, 48);  // 29.3938 ms
-  rec.frequency(1951, 59);  // 30.2409 ms 1951
-  ply.frequency(2097, 63);  // 30.0429 ms 2097
-  stp.frequency(2229, 67);  // 30.0583 ms 2229
+  // of cycles to match.  Have two different option. Choose
+  // which ever you prefer.
+//  row1.frequency(697, 21);  // 30.1291 ms
+//  row2.frequency(770, 23);  // 29.8701 ms
+//  row3.frequency(852, 25);  // 29.3427 ms
+//  row4.frequency(941, 28);  // 29.7556 ms
+//  column1.frequency(1209, 36);  // 29.7767 ms
+//  column2.frequency(1336, 40);  // 29.9401 ms
+//  column3.frequency(1477, 44);  // 29.7901 ms
+//  column4.frequency(1633, 48);  // 29.3938 ms
+//  rec.frequency(1951, 59);  // 30.2409 ms 1951
+//  ply.frequency(2097, 63);  // 30.0429 ms 2097
+//  stp.frequency(2229, 67);  // 30.0583 ms 2229
+  
+  row1.frequency(697, 7);  // 10.043 ms
+  row2.frequency(770, 8);  // 10.390 ms
+  row3.frequency(852, 9);  // 10.563 ms
+  row4.frequency(941, 9);  // 09.564 ms
+  column1.frequency(1209, 12);  // 09.926 ms
+  column2.frequency(1336, 13);  // 09.731 ms
+  column3.frequency(1477, 15);  // 10.156 ms
+  column4.frequency(1633, 16);  // 09.798 ms
+  rec.frequency(1951, 20);  // 10.251 ms
+  ply.frequency(2097, 20);  // 09.537 ms
+  stp.frequency(2229, 22);  // 09.870 ms
 
   // Initialize the SD card
   SPI.setMOSI(7);
@@ -294,18 +309,30 @@ void stopRecording() {
   // Close the file and update the mode
   if (mode == 1) {
     frec.close();
-    frec = SD.open("test.RAW");
-    if(frec){
-      if (frec.available()) {
-        for( int i = 0; i < 5; i++){
-          filename = filename + frec.read();
-        }
-        Serial.print("File saved as ");
-        Serial.println(filename);
-      }
-    }
+    saveFile(frec);
   }
   mode = 0;
+}
+
+// Save the just recorded file under the user specified name
+void saveFile(File file) {
+  file = SD.open("test.RAW");
+  if(file){
+    if (file.available()) {
+      int nameLen = file.read() - 48;
+      Serial.println(nameLen);
+      for( int i = 0; i < nameLen; i++){
+        Serial.println("ok");
+        char value = file.read();
+        Serial.println("still");
+        // this doesn't work; stalls out and kills program
+        filename[i] = value;
+        Serial.println("now");
+      }
+      Serial.print("File saved as ");
+      Serial.println(filename);
+    }
+  }
 }
 
 // Initial steps needed to play the file
