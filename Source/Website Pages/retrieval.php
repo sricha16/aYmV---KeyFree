@@ -58,8 +58,8 @@
 			{
 				//var description = $('#description').val();
 				var ct = b64;
-				//to get this test to work, make sure you've entered meow as the key on the entry page
-				var dKey = "meow";
+				//grabs whatever key is resting in the "key" box
+				var dKey = $('#dKey').val();
 				var key = CryptoJS.SHA256(dKey);
 				var iv = CryptoJS.enc.Base64.parse(ct.substring(0, 32));
 				var ciphertext = ct.substring(32);
@@ -94,8 +94,16 @@
 				audioInput.connect(volume);
 				var bufferSize = 512;
 				var recorder = context.createScriptProcessor(bufferSize, 1, 1);
-				var dtmf = new DTMF(context.sampleRate,1.4,6,1,0.0002);
-				//.005
+				
+				/*
+					*sample rate is the sample rate of the audio buffer being given to the dtmf object.
+					*peakFilterSensitivity filters out "bad" energy peaks. Can be any number between 1 and infinity.
+					*repeatMin requires that a DTMF character be repeated enough times across buffers to be considered a valid DTMF tone.
+					*downsampleRate value decides how much the buffers are downsampled(by skipping every Nth sample). Default setting is 1.
+					*threshold value gets passed to the goertzel object that gets created by the dtmf object. This is the noise threshold value. Default setting is 0.
+				*/
+				//DTMF(samplerate, peakFilterSensitivity, repeatMin, downsampleRate, threshold)
+				var dtmf = new DTMF(context.sampleRate, 0, 6, 1, 0);  //does not sample well with only 44100Hz. context.sampleRate = 48000Hz
 				dtmf.onDecode = function(value){
 				    output += value;
 				    $('#DTMFinput').html(output);
@@ -112,8 +120,21 @@
 		
 	</head>
 	<body>
-		<p class = "text"> 
-			Instructions go in this box
+		<p class = "text">
+		<font face="calibri" size="3">
+			TEMP: INSTRUCTIONS FOR TESTING <br>
+			1. on ENTRY, type in a key, description, username, and password.<br>
+			2. on RETRIEVAL, type in  the same key and leave the other boxes blank.<br>
+			3. on RETRIEVAL, click ALLOW to let key-free.co access your mic<br>
+			4. on ENTRY click STORE (then OK in the dialog box)<br>
+			5. wait until notification that transfer is complete on the ENTRY window<br>
+			6. on RETRIEVAL, click "toBase64"<br>
+			7. data under the "decrypted data" dialog window should match the username and password from entry.
+			<br><br>
+			NOTES:<br>
+			Sometimes, RETRIEVAL will popup on load saying that no mic was detected, but the dialog to allow is still present.
+			In this case, OK on the popup, then allow in the browser dialog, and then refresh the page.
+		</font>
 		</p>
 		<br/>
 		<p class = "text"> 

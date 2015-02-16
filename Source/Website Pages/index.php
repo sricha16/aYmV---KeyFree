@@ -22,7 +22,5 @@
 		<br><br>
 		<p class="text">Demo Video<br>
 			<iframe width="560" height="315" src="https://www.youtube.com/embed/OAqbk4DVV5Q" frameborder="0" allowfullscreen></iframe></p>
-	
 	</body>
 </html>
-

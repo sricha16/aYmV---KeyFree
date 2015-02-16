@@ -144,19 +144,26 @@
 				oscillator.connect(window.audioContext.destination);
 				//firefox doesn't support .noteOn and .noteOff, but can handle .start and .stop
 				oscillator.start(window.audioContext.currentTime);
-				oscillator.stop(window.audioContext.currentTime + .25);			
+				oscillator.stop(window.audioContext.currentTime + .11);			
 				
 				osc.frequency.value = high;
 				osc.connect(window.audioContext.destination);
 				osc.start(window.audioContext.currentTime);
-				osc.stop(window.audioContext.currentTime + .25);
+				osc.stop(window.audioContext.currentTime + .11);  //.25 s = 250 ms
 				
 				if(num+1 < hexVal.length)
-					setTimeout(function(){ genDialTones(hexVal, num+1); }, 257);
+					setTimeout(function(){ genDialTones(hexVal, num+1); }, 150); //250 ms
 				else
 					alert('Transfer has completed successfully! :) ');
-					
-			}								
+			
+			}	
+			function verify ()//low, up, num, spec, len)	
+			{
+				alert("Pressed Verify");
+				var test= $('#pw').val();
+				alert(test);
+			}	
+						
 		</script>
 	</head>
 	<body>
@@ -180,15 +187,25 @@
 		</p>
 		<br/>
 		<p class = "text"> 
-			Do you want us to generate your password?<br/>
-			<form action="generatePassword.php" method="post">
-    				<input type="checkbox" name="formDoor[]" value="A" />lower case<br />
-				<input type="checkbox" name="formDoor[]" value="B" />UPPER CASE<br />
-				<input type="checkbox" name="formDoor[]" value="C" />numbers<br />
-				<input type="checkbox" name="formDoor[]" value="D" />Special Characters<br />
-   		 		<input type="submit" name="formSubmit" value="Submit" />
+				Please select select the valid characters in the generated password<br>
+				lower case: <input type="checkbox" checked ="yes" id="pw" value="a"  /><br />
+				UPPER CASE: <input type="checkbox" checked ="yes" id="pw1" value="b"  /><br /> 
+				Numbers: <input type="checkbox" checked ="yes" id="pw2" value="c"  /><br /> 
+				Special Characters: <input type="checkbox" id="pw3" value="d"  /><br><br>
+				Please select your password length.<br>
+				<input type="radio" name="len" /> : 8 <br />
+				<input type="radio" name="len" /> : 12 <br />
+				<input type="radio" name="len" /> : 16 <br />
+				<input type="radio" name="len" /> : 20 <br />
+				<input type="radio" name="len" /> : 12 <br />
+				<button class="button-style" onclick="verify();">Verify</button><br>
+
+				
 			</form>
 		</p>
 				
 	</body>
 </html>
+
+//			<form name="pwgen" action="verify(a,b,c,d)" method="post">
+//			</form>
