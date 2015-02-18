@@ -13,6 +13,7 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <SD.h>
+#include <string.h>
 
 // Create the Audio components.  These should be created in the
 // order data flows, inputs/sources -> processing -> outputs
@@ -63,17 +64,17 @@ const int myInput = AUDIO_INPUT_MIC;
 // Remember which mode we're doing
 int mode = 0;  // 0=stopped, 1=recording, 2=playing
 
+// Keeps tack of duplicate values for timing issues
+char past = 0;
+
 // The file where data is stored
 File frec;
 
 // The file to save the data under the new name
 File fnew;
 
-// Unique filename to store data under
-char *filename;
-
-// On board LED
-int led = 13;
+// The file to play
+File fply;
 
 void setup() {
   // Audio connections require memory to work.  For more
@@ -104,17 +105,29 @@ void setup() {
 //  ply.frequency(2097, 63);  // 30.0429 ms 2097
 //  stp.frequency(2229, 67);  // 30.0583 ms 2229
   
-  row1.frequency(697, 7);  // 10.043 ms
-  row2.frequency(770, 8);  // 10.390 ms
-  row3.frequency(852, 9);  // 10.563 ms
-  row4.frequency(941, 9);  // 09.564 ms
-  column1.frequency(1209, 12);  // 09.926 ms
-  column2.frequency(1336, 13);  // 09.731 ms
-  column3.frequency(1477, 15);  // 10.156 ms
-  column4.frequency(1633, 16);  // 09.798 ms
-  rec.frequency(1951, 20);  // 10.251 ms
-  ply.frequency(2097, 20);  // 09.537 ms
-  stp.frequency(2229, 22);  // 09.870 ms
+//  row1.frequency(697, 7);  // 10.043 ms
+//  row2.frequency(770, 8);  // 10.390 ms
+//  row3.frequency(852, 9);  // 10.563 ms
+//  row4.frequency(941, 9);  // 09.564 ms
+//  column1.frequency(1209, 12);  // 09.926 ms
+//  column2.frequency(1336, 13);  // 09.731 ms
+//  column3.frequency(1477, 15);  // 10.156 ms
+//  column4.frequency(1633, 16);  // 09.798 ms
+//  rec.frequency(1951, 20);  // 10.251 ms
+//  ply.frequency(2097, 20);  // 09.537 ms
+//  stp.frequency(2229, 22);  // 09.870 ms
+  
+  row1.frequency(697, 76);  // .1090 s
+  row2.frequency(770, 84);  // .1091 s
+  row3.frequency(852, 93);  // .1092 s
+  row4.frequency(941, 103);  // .1095 s
+  column1.frequency(1209, 132);  // .1092 s
+  column2.frequency(1336, 146);  // .1093 s
+  column3.frequency(1477, 162);  // .1097 s
+  column4.frequency(1633, 179);  // .1096 s
+  rec.frequency(1951, 214);  // .1097 s
+  ply.frequency(2097, 230);  // .1097 s
+  stp.frequency(2229, 245);  // .1099 s
 
   // Initialize the SD card
   SPI.setMOSI(7);
@@ -184,12 +197,12 @@ void startRecording() {
   //digitalWrite(led, HIGH);
   
   // Check if file already exists, delete it if it does
-  if (SD.exists("test.RAW")) {
-    SD.remove("test.RAW");
+  if (SD.exists("temp.RAW")) {
+    SD.remove("temp.RAW");
   }
   
   // Open the file
-  frec = SD.open("test.RAW", FILE_WRITE);
+  frec = SD.open("temp.RAW", FILE_WRITE);
   
   // Check that the file was open correctly
   if (frec) {
@@ -202,6 +215,7 @@ void startRecording() {
 
 // Read in another block of recorded data
 void continueRecording() {
+  elapsedMicros usec = 0;
   float r1, r2, r3, r4, c1, c2, c3, c4;
   char digit = 0;
 
@@ -290,6 +304,10 @@ void continueRecording() {
       digit = 'D';
     }
   }
+  
+//  if ((digit > 0)) {
+//    past = digit;
+//  }
 
   // print the key, if any found437
   if ((digit > 0)) {
@@ -297,6 +315,7 @@ void continueRecording() {
     Serial.print("  --> Key: ");
     Serial.print(digit);
     Serial.println(" written to file.");
+    //delay(100);
   }
 }
 
@@ -316,24 +335,46 @@ void stopRecording() {
 
 // Save the just recorded file under the user specified name
 void saveFile(File file) {
-  file = SD.open("test.RAW");
+  file = SD.open("temp.RAW");
   if(file){
     if (file.available()) {
+      // read first byte to determine length of desired name
       int nameLen = file.read() - 48;
-      Serial.println(nameLen);
+      // create an array of that length plus 5 for terminating char and .RAW
+      char filename[nameLen+5];
+      // set to empty string so has reference
+      strcpy(filename, "");
+      // read the name in one char at a time and add it to filename variable
       for( int i = 0; i < nameLen; i++){
-        Serial.println("ok");
         char value = file.read();
-        Serial.println("still");
-        // this doesn't work; stalls out and kills program
-        filename[i] = value;
-        Serial.println("now");
+        strncat(filename, &value, 1);
       }
+      strcat(filename, ".RAW");
+      // output name for testing
       Serial.print("File saved as ");
       Serial.println(filename);
-    }
-  }
-}
+      
+      // Check to see if a file with that name already exists
+      // Deletes file if it does so user can update information
+      if (SD.exists(filename)) {
+        SD.remove(filename);
+      }
+      // Open the file to write to
+      fnew = SD.open(filename, FILE_WRITE);
+      if(fnew) {
+        // Copy rest of data to a new file with specified name
+        while( file.available() ) {
+          byte meow = file.read();
+          fnew.write(meow);
+        }
+      }
+      else {
+        Serial.println("File could not be opened for copy");
+      }
+      fnew.close();
+    } // if (file.available())
+  } // if(file)
+} // saveFile( File file)
 
 // Initial steps needed to play the file
 void startPlaying() {
@@ -342,10 +383,11 @@ void startPlaying() {
   //digitalWrite(led, HIGH);
   
   // Open file
-  frec = SD.open("test.RAW");
+  //fply = SD.open("1.RAW");
+  fply = SD.open("temp.RAW");
   
   // Check if file opened correctly and update mode
-  if (frec) {
+  if (fply) {
     mode = 2;
   } 
   else {
@@ -355,11 +397,11 @@ void startPlaying() {
 
 // Check if the end has been reached, stop if yes continue if no
 void continuePlaying() {
-  if (frec.available()) {
+  if (fply.available()) {
     int low=0;
     int high=0;
     // Read in a value from the file
-    char key = frec.read();
+    char key = fply.read();
     // Match the character to the correct tones
     switch( key ){
       case '1' :
@@ -443,16 +485,16 @@ void continuePlaying() {
       sine2.frequency(high);
       sine2.amplitude(0.45);
       AudioInterrupts();    // enable, both tones will start together
-      delay(100);           // let the sound play for 0.1 second
+      delay(110);           // let the sound play for 0.1 second
       AudioNoInterrupts();
       sine1.amplitude(0);
       sine2.amplitude(0);
       AudioInterrupts();
-      delay(50);            // make sure we have 0.05 second silence after
+      delay(40);            // make sure we have 0.05 second silence after
     }
   } 
   else {
-    frec.close();
+    fply.close();
     mode = 0;
   }
 }
@@ -464,7 +506,7 @@ void stopPlaying() {
   //digitalWrite(led, LOW);
   
   // Close file and update mode
-  if (mode == 2) frec.close();
+  if (mode == 2) fply.close();
   mode = 0;
 }
 
