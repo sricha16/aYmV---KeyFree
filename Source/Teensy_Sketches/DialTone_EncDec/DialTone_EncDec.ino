@@ -91,7 +91,7 @@ void setup() {
   delay(100);
 
   // Configure the tone detectors with the frequency and number
-  // of cycles to match.  Have two different option. Choose
+  // of cycles to match.  Have three different option. Choose
   // which ever you prefer.
 //  row1.frequency(697, 21);  // 30.1291 ms
 //  row2.frequency(770, 23);  // 29.8701 ms
@@ -137,15 +137,9 @@ void setup() {
     while (1) {
       Serial.println("Unable to access the SD card");
       delay(500);
-    }
-  }
-  
-// pinMode method breaks read() function on tones... have no idea why...
-// actually it might be because the mic port also uses pin 13 so they fight over it
-  // Initialize LED
-//  pinMode(led, OUTPUT);
-//  digitalWrite(led, LOW);
-}
+    } // while
+  } // if
+} // setup
 
 const float tone_threshold = 0.1;
 
@@ -156,12 +150,6 @@ void loop() {
   r = rec.read();
   p = ply.read();
   s = stp.read();
-  
-//  Serial.print(r);
-//  Serial.print(", ");
-//  Serial.print(p);
-//  Serial.print(", ");
-//  Serial.println(s); 
   
   // compare to threshold
   if( r >= tone_threshold ) {
@@ -215,7 +203,6 @@ void startRecording() {
 
 // Read in another block of recorded data
 void continueRecording() {
-  elapsedMicros usec = 0;
   float r1, r2, r3, r4, c1, c2, c3, c4;
   char digit = 0;
 
@@ -228,24 +215,6 @@ void continueRecording() {
   c2 = column2.read();
   c3 = column3.read();
   c4 = column4.read();
-
-//  // print the raw data, for troubleshooting
-//  Serial.print("tones: ");
-//  Serial.print(r1);
-//  Serial.print(", ");
-//  Serial.print(r2);
-//  Serial.print(", ");
-//  Serial.print(r3);
-//  Serial.print(", ");
-//  Serial.print(r4);
-//  Serial.print(",   ");
-//  Serial.print(c1);
-//  Serial.print(", ");
-//  Serial.print(c2);
-//  Serial.print(", ");
-//  Serial.print(c3);
-//  Serial.print(", ");
-//  Serial.println(c4);
 
   // check all 12 combinations for tone heard
   if (r1 >= tone_threshold) {
@@ -305,12 +274,11 @@ void continueRecording() {
     }
   }
   
-//  if ((digit > 0)) {
-//    past = digit;
-//  }
+if ( digit == past ) digit = 0;
 
   // print the key, if any found437
   if ((digit > 0)) {
+    past = digit;
     frec.write(digit);
     Serial.print("  --> Key: ");
     Serial.print(digit);
@@ -338,10 +306,12 @@ void saveFile(File file) {
   file = SD.open("temp.RAW");
   if(file){
     if (file.available()) {
-      // read first byte to determine length of desired name
+      // Read first byte to determine length of desired name
       int nameLen = file.read() - 48;
-      // create an array of that length plus 5 for terminating char and .RAW
+      // Create an array of that length plus 5 for terminating char and .RAW
       char filename[nameLen+5];
+      // Create static length array
+      //char filename[100];
       // set to empty string so has reference
       strcpy(filename, "");
       // read the name in one char at a time and add it to filename variable
@@ -382,9 +352,13 @@ void startPlaying() {
   Serial.println("startPlaying");
   //digitalWrite(led, HIGH);
   
+  // Get file name
+  char *fname = getName();
+  Serial.println(fname);
+  
   // Open file
   //fply = SD.open("1.RAW");
-  fply = SD.open("temp.RAW");
+  fply = SD.open(fname);
   
   // Check if file opened correctly and update mode
   if (fply) {
@@ -393,6 +367,110 @@ void startPlaying() {
   else {
     Serial.println("File could not be opened for playing");
   }
+}
+
+// Read in the description
+char * getName() {
+  Serial.println("Please enter the desired file name");
+  Serial.println("Enter the length and name followed by the stop signal");
+  bool done = false;
+  char name[100];
+  strcpy(name, "");
+  while( !done ) {
+    float r1, r2, r3, r4, c1, c2, c3, c4, s1;
+    char digit = 0;
+  
+    // read all seven tone detectors
+    r1 = row1.read();
+    r2 = row2.read();
+    r3 = row3.read();
+    r4 = row4.read();
+    c1 = column1.read();
+    c2 = column2.read();
+    c3 = column3.read();
+    c4 = column4.read();
+    s1 = stp.read();
+  
+    // check all 12 combinations for tone heard
+    if (r1 >= tone_threshold) {
+      if (c1 > tone_threshold) {
+        digit = '1';
+      } 
+      else if (c2 > tone_threshold) {
+        digit = '2';
+      } 
+      else if (c3 > tone_threshold) {
+        digit = '3';
+      } 
+      else if (c4 > tone_threshold) {
+        digit = 'A';
+      }
+    } 
+    else if (r2 >= tone_threshold) { 
+      if (c1 > tone_threshold) {
+        digit = '4';
+      } 
+      else if (c2 > tone_threshold) {
+        digit = '5';
+      } 
+      else if (c3 > tone_threshold) {
+        digit = '6';
+      } 
+      else if (c4 > tone_threshold) {
+        digit = 'B';
+      }
+    } 
+    else if (r3 >= tone_threshold) { 
+      if (c1 > tone_threshold) {
+        digit = '7';
+      } 
+      else if (c2 > tone_threshold) {
+        digit = '8';
+      } 
+      else if (c3 > tone_threshold) {
+        digit = '9';
+      } 
+      else if (c4 > tone_threshold) {
+        digit = 'C';
+      }
+    } 
+    else if (r4 >= tone_threshold) { 
+      if (c1 > tone_threshold) {
+        digit = 'E';
+      } 
+      else if (c2 > tone_threshold) {
+        digit = '0';
+      } 
+      else if (c3 > tone_threshold) {
+        digit = 'F';
+      } 
+      else if (c4 > tone_threshold) {
+        digit = 'D';
+      }
+    }
+    else if (s1 >= tone_threshold) {
+       done = true;
+    }
+    
+  if ( digit == past ) digit = 0;
+  
+    // print the key, if any found437
+    if ((digit > 0)) {
+      past = digit;
+      strncat(name, &digit, 1);
+      Serial.print("  Value: ");
+      Serial.print(digit);
+      Serial.println(" added to name.");
+      //delay(100);
+    } // if
+  } // while
+  
+  // Add .RAW extention
+  strcat(name, ".RAW");
+  
+  // Return name
+  Serial.println(name);
+  return name;
 }
 
 // Check if the end has been reached, stop if yes continue if no
@@ -508,6 +586,11 @@ void stopPlaying() {
   // Close file and update mode
   if (mode == 2) fply.close();
   mode = 0;
+}
+
+// Returns the char associated with the given signal
+char readValue() {
+  
 }
 
 
