@@ -141,7 +141,7 @@ void setup() {
   } // if
 } // setup
 
-const float tone_threshold = 0.1;
+const float tone_threshold = 0.3;
 
 void loop() {
   float r, p, s;
@@ -353,12 +353,12 @@ void startPlaying() {
   //digitalWrite(led, HIGH);
   
   // Get file name
-  char *fname = getName();
-  Serial.println(fname);
+  //char *fname = getName();
+  //Serial.println(fname);
   
   // Open file
-  //fply = SD.open("1.RAW");
-  fply = SD.open(fname);
+  fply = SD.open("temp.RAW");
+  //fply = SD.open(fname);
   
   // Check if file opened correctly and update mode
   if (fply) {
@@ -377,78 +377,12 @@ char * getName() {
   char name[100];
   strcpy(name, "");
   while( !done ) {
-    float r1, r2, r3, r4, c1, c2, c3, c4, s1;
-    char digit = 0;
-  
-    // read all seven tone detectors
-    r1 = row1.read();
-    r2 = row2.read();
-    r3 = row3.read();
-    r4 = row4.read();
-    c1 = column1.read();
-    c2 = column2.read();
-    c3 = column3.read();
-    c4 = column4.read();
+    float s1;
+    char digit = readValue();
+    
     s1 = stp.read();
-  
-    // check all 12 combinations for tone heard
-    if (r1 >= tone_threshold) {
-      if (c1 > tone_threshold) {
-        digit = '1';
-      } 
-      else if (c2 > tone_threshold) {
-        digit = '2';
-      } 
-      else if (c3 > tone_threshold) {
-        digit = '3';
-      } 
-      else if (c4 > tone_threshold) {
-        digit = 'A';
-      }
-    } 
-    else if (r2 >= tone_threshold) { 
-      if (c1 > tone_threshold) {
-        digit = '4';
-      } 
-      else if (c2 > tone_threshold) {
-        digit = '5';
-      } 
-      else if (c3 > tone_threshold) {
-        digit = '6';
-      } 
-      else if (c4 > tone_threshold) {
-        digit = 'B';
-      }
-    } 
-    else if (r3 >= tone_threshold) { 
-      if (c1 > tone_threshold) {
-        digit = '7';
-      } 
-      else if (c2 > tone_threshold) {
-        digit = '8';
-      } 
-      else if (c3 > tone_threshold) {
-        digit = '9';
-      } 
-      else if (c4 > tone_threshold) {
-        digit = 'C';
-      }
-    } 
-    else if (r4 >= tone_threshold) { 
-      if (c1 > tone_threshold) {
-        digit = 'E';
-      } 
-      else if (c2 > tone_threshold) {
-        digit = '0';
-      } 
-      else if (c3 > tone_threshold) {
-        digit = 'F';
-      } 
-      else if (c4 > tone_threshold) {
-        digit = 'D';
-      }
-    }
-    else if (s1 >= tone_threshold) {
+    
+    if (s1 >= tone_threshold) {
        done = true;
     }
     
@@ -590,7 +524,78 @@ void stopPlaying() {
 
 // Returns the char associated with the given signal
 char readValue() {
+  float r1, r2, r3, r4, c1, c2, c3, c4;
+  char digit = 0;
+
+  // read all seven tone detectors
+  r1 = row1.read();
+  r2 = row2.read();
+  r3 = row3.read();
+  r4 = row4.read();
+  c1 = column1.read();
+  c2 = column2.read();
+  c3 = column3.read();
+  c4 = column4.read();
+
+  // check all 12 combinations for tone heard
+  if (r1 >= tone_threshold) {
+    if (c1 > tone_threshold) {
+      digit = '1';
+    } 
+    else if (c2 > tone_threshold) {
+      digit = '2';
+    } 
+    else if (c3 > tone_threshold) {
+      digit = '3';
+    } 
+    else if (c4 > tone_threshold) {
+      digit = 'A';
+    }
+  } 
+  else if (r2 >= tone_threshold) { 
+    if (c1 > tone_threshold) {
+      digit = '4';
+    } 
+    else if (c2 > tone_threshold) {
+      digit = '5';
+    } 
+    else if (c3 > tone_threshold) {
+      digit = '6';
+    } 
+    else if (c4 > tone_threshold) {
+      digit = 'B';
+    }
+  } 
+  else if (r3 >= tone_threshold) { 
+    if (c1 > tone_threshold) {
+      digit = '7';
+    } 
+    else if (c2 > tone_threshold) {
+      digit = '8';
+    } 
+    else if (c3 > tone_threshold) {
+      digit = '9';
+    } 
+    else if (c4 > tone_threshold) {
+      digit = 'C';
+    }
+  } 
+  else if (r4 >= tone_threshold) { 
+    if (c1 > tone_threshold) {
+      digit = 'E';
+    } 
+    else if (c2 > tone_threshold) {
+      digit = '0';
+    } 
+    else if (c3 > tone_threshold) {
+      digit = 'F';
+    } 
+    else if (c4 > tone_threshold) {
+      digit = 'D';
+    }
+  }
   
+  return digit;
 }
 
 
