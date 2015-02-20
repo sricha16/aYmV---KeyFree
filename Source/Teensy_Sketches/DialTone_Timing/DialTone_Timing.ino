@@ -27,9 +27,7 @@ AudioAnalyzeToneDetect   column1;
 AudioAnalyzeToneDetect   column2;
 AudioAnalyzeToneDetect   column3;
 AudioAnalyzeToneDetect   column4;
-AudioAnalyzeToneDetect   rec;      // Signal to start recording
-AudioAnalyzeToneDetect   ply;      // Signal to start playing
-AudioAnalyzeToneDetect   stp;      // Signal to stop playing or recording
+AudioAnalyzeToneDetect   command;  // Signal for commanding rec, stp, ply
 AudioSynthWaveformSine   sine1;    // 2 sine waves
 AudioSynthWaveformSine   sine2;    // to create DTMF
 AudioMixer4              mixer;
@@ -46,9 +44,7 @@ AudioConnection patchCord06(audioIn, 0, column2, 0);
 AudioConnection patchCord07(audioIn, 0, column3, 0);
 AudioConnection patchCord08(audioIn, 0, column4, 0);
 // For Start/Stop Signals
-AudioConnection patchCord09(audioIn, 0, rec, 0);
-AudioConnection patchCord10(audioIn, 0, ply, 0);
-AudioConnection patchCord11(audioIn, 0, stp, 0);
+AudioConnection patchCord09(audioIn, 0, command, 0);
 // For Output
 AudioConnection patchCord12(sine1, 0, mixer, 0);
 AudioConnection patchCord13(sine2, 0, mixer, 1);
@@ -76,6 +72,9 @@ File fnew;
 // The file to play
 File fply;
 
+// The threshold for the signals
+const float tone_threshold = 0.3;
+
 void setup() {
   // Audio connections require memory to work.  For more
   // detailed information, see the MemoryAndCpuUsage example
@@ -90,44 +89,41 @@ void setup() {
   while (!Serial) ;
   delay(100);
 
-  // Configure the tone detectors with the frequency and number
-  // of cycles to match.  Have three different option. Choose
-  // which ever you prefer.
-//  row1.frequency(697, 21);  // 30.1291 ms
-//  row2.frequency(770, 23);  // 29.8701 ms
-//  row3.frequency(852, 25);  // 29.3427 ms
-//  row4.frequency(941, 28);  // 29.7556 ms
-//  column1.frequency(1209, 36);  // 29.7767 ms
-//  column2.frequency(1336, 40);  // 29.9401 ms
-//  column3.frequency(1477, 44);  // 29.7901 ms
-//  column4.frequency(1633, 48);  // 29.3938 ms
-//  rec.frequency(1951, 59);  // 30.2409 ms 1951
-//  ply.frequency(2097, 63);  // 30.0429 ms 2097
-//  stp.frequency(2229, 67);  // 30.0583 ms 2229
+  // Set the frequency of each tone and the number or cycles
+//  row1.frequency(697, 76);  // .1090 s
+//  row2.frequency(770, 84);  // .1091 s
+//  row3.frequency(852, 93);  // .1092 s
+//  row4.frequency(941, 103);  // .1095 s
+//  column1.frequency(1209, 132);  // .1092 s
+//  column2.frequency(1336, 146);  // .1093 s
+//  column3.frequency(1477, 162);  // .1097 s
+//  column4.frequency(1633, 179);  // .1096 s
+//  rec.frequency(1951, 214);  // .1097 s
+//  ply.frequency(2097, 230);  // .1097 s
+//  stp.frequency(2229, 245);  // .1099 s
   
-//  row1.frequency(697, 7);  // 10.043 ms
-//  row2.frequency(770, 8);  // 10.390 ms
-//  row3.frequency(852, 9);  // 10.563 ms
-//  row4.frequency(941, 9);  // 09.564 ms
-//  column1.frequency(1209, 12);  // 09.926 ms
-//  column2.frequency(1336, 13);  // 09.731 ms
-//  column3.frequency(1477, 15);  // 10.156 ms
-//  column4.frequency(1633, 16);  // 09.798 ms
-//  rec.frequency(1951, 20);  // 10.251 ms
-//  ply.frequency(2097, 20);  // 09.537 ms
-//  stp.frequency(2229, 22);  // 09.870 ms
+  row1.frequency(697, 21);
+  row2.frequency(770, 23);
+  row3.frequency(852, 25);
+  row4.frequency(941, 28);
+  column1.frequency(1209, 36);
+  column2.frequency(1336, 40);
+  column3.frequency(1477, 44);
+  column4.frequency(1633, 48);
+  command.frequency(1993);
   
-  row1.frequency(697, 76);  // .1090 s
-  row2.frequency(770, 84);  // .1091 s
-  row3.frequency(852, 93);  // .1092 s
-  row4.frequency(941, 103);  // .1095 s
-  column1.frequency(1209, 132);  // .1092 s
-  column2.frequency(1336, 146);  // .1093 s
-  column3.frequency(1477, 162);  // .1097 s
-  column4.frequency(1633, 179);  // .1096 s
-  rec.frequency(1951, 214);  // .1097 s
-  ply.frequency(2097, 230);  // .1097 s
-  stp.frequency(2229, 245);  // .1099 s
+  // Set the threshold value for each signal
+  row1.threshold(tone_threshold);
+  row2.threshold(tone_threshold);
+  row3.threshold(tone_threshold);
+  row4.threshold(tone_threshold);
+  column1.threshold(tone_threshold);
+  column2.threshold(tone_threshold);
+  column3.threshold(tone_threshold);
+  column4.threshold(tone_threshold);
+  rec.threshold(tone_threshold);
+  ply.threshold(tone_threshold);
+  stp.threshold(tone_threshold);
 
   // Initialize the SD card
   SPI.setMOSI(7);
@@ -141,7 +137,6 @@ void setup() {
   } // if
 } // setup
 
-const float tone_threshold = 0.3;
 
 void loop() {
   float r, p, s;
@@ -203,9 +198,8 @@ void startRecording() {
 
 // Read in another block of recorded data
 void continueRecording() {
-  char digit = readValue();
   
-  if ( digit == past ) digit = 0;
+  char digit = readValue();
 
   // print the key, if any found437
   if ((digit > 0)) {
@@ -454,76 +448,32 @@ void stopPlaying() {
 }
 
 // Returns the char associated with the given signal
-char readValue() {
-  float r1, r2, r3, r4, c1, c2, c3, c4;
-  char digit = 0;
-
-  // read all seven tone detectors
-  r1 = row1.read();
-  r2 = row2.read();
-  r3 = row3.read();
-  r4 = row4.read();
-  c1 = column1.read();
-  c2 = column2.read();
-  c3 = column3.read();
-  c4 = column4.read();
-
-  // check all 12 combinations for tone heard
-  if (r1 >= tone_threshold) {
-    if (c1 > tone_threshold) {
-      digit = '1';
-    } 
-    else if (c2 > tone_threshold) {
-      digit = '2';
-    } 
-    else if (c3 > tone_threshold) {
-      digit = '3';
-    } 
-    else if (c4 > tone_threshold) {
-      digit = 'A';
-    }
-  } 
-  else if (r2 >= tone_threshold) { 
-    if (c1 > tone_threshold) {
-      digit = '4';
-    } 
-    else if (c2 > tone_threshold) {
-      digit = '5';
-    } 
-    else if (c3 > tone_threshold) {
-      digit = '6';
-    } 
-    else if (c4 > tone_threshold) {
-      digit = 'B';
-    }
-  } 
-  else if (r3 >= tone_threshold) { 
-    if (c1 > tone_threshold) {
-      digit = '7';
-    } 
-    else if (c2 > tone_threshold) {
-      digit = '8';
-    } 
-    else if (c3 > tone_threshold) {
-      digit = '9';
-    } 
-    else if (c4 > tone_threshold) {
-      digit = 'C';
-    }
-  } 
-  else if (r4 >= tone_threshold) { 
-    if (c1 > tone_threshold) {
-      digit = 'E';
-    } 
-    else if (c2 > tone_threshold) {
-      digit = '0';
-    } 
-    else if (c3 > tone_threshold) {
-      digit = 'F';
-    } 
-    else if (c4 > tone_threshold) {
-      digit = 'D';
-    }
+char readValue() {  
+  char digit = 0;  
+  
+  while( row1 ) {
+    while( column1 ) digit = '1';
+    while( column2 ) digit = '2';
+    while( column3 ) digit = '3';
+    while( column4 ) digit = 'A';
+  }
+  while( row2 ) {
+    while( column1 ) digit = '4';
+    while( column2 ) digit = '5';
+    while( column3 ) digit = '6';
+    while( column4 ) digit = 'B';
+  }
+  while( row3 ) {
+    while( column1 ) digit = '7';
+    while( column2 ) digit = '8';
+    while( column3 ) digit = '9';
+    while( column4 ) digit = 'C';
+  }
+  while( row4 ) {
+    while( column1 ) digit = 'E';
+    while( column2 ) digit = '0';
+    while( column3 ) digit = 'F';
+    while( column4 ) digit = 'D';
   }
   
   return digit;
