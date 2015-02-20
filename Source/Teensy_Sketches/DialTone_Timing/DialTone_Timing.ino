@@ -43,7 +43,7 @@ AudioConnection patchCord05(audioIn, 0, column1, 0);
 AudioConnection patchCord06(audioIn, 0, column2, 0);
 AudioConnection patchCord07(audioIn, 0, column3, 0);
 AudioConnection patchCord08(audioIn, 0, column4, 0);
-// For Start/Stop Signals
+// For Command Signals
 AudioConnection patchCord09(audioIn, 0, command, 0);
 // For Output
 AudioConnection patchCord12(sine1, 0, mixer, 0);
@@ -59,9 +59,6 @@ const int myInput = AUDIO_INPUT_MIC;
 
 // Remember which mode we're doing
 int mode = 0;  // 0=stopped, 1=recording, 2=playing
-
-// Keeps tack of duplicate values for timing issues
-char past = 0;
 
 // The file where data is stored
 File frec;
@@ -88,20 +85,8 @@ void setup() {
 
   while (!Serial) ;
   delay(100);
-
-  // Set the frequency of each tone and the number or cycles
-//  row1.frequency(697, 76);  // .1090 s
-//  row2.frequency(770, 84);  // .1091 s
-//  row3.frequency(852, 93);  // .1092 s
-//  row4.frequency(941, 103);  // .1095 s
-//  column1.frequency(1209, 132);  // .1092 s
-//  column2.frequency(1336, 146);  // .1093 s
-//  column3.frequency(1477, 162);  // .1097 s
-//  column4.frequency(1633, 179);  // .1096 s
-//  rec.frequency(1951, 214);  // .1097 s
-//  ply.frequency(2097, 230);  // .1097 s
-//  stp.frequency(2229, 245);  // .1099 s
   
+  // Setting frequency and cycles for 16 hex tones
   row1.frequency(697, 21);
   row2.frequency(770, 23);
   row3.frequency(852, 25);
@@ -109,8 +94,9 @@ void setup() {
   column1.frequency(1209, 36);
   column2.frequency(1336, 40);
   column3.frequency(1477, 44);
-  column4.frequency(1633, 48);
-  command.frequency(1993);
+  column4.frequency(1633, 49);
+  // Setting frequency and cycle for command tone
+  command.frequency(1993, 60);
   
   // Set the threshold value for each signal
   row1.threshold(tone_threshold);
@@ -121,9 +107,7 @@ void setup() {
   column2.threshold(tone_threshold);
   column3.threshold(tone_threshold);
   column4.threshold(tone_threshold);
-  rec.threshold(tone_threshold);
-  ply.threshold(tone_threshold);
-  stp.threshold(tone_threshold);
+  command.threshold(tone_threshold);
 
   // Initialize the SD card
   SPI.setMOSI(7);
@@ -139,28 +123,30 @@ void setup() {
 
 
 void loop() {
-  float r, p, s;
+  char cmd = 0;
   
-  // read for start-stop and playData signals
-  r = rec.read();
-  p = ply.read();
-  s = stp.read();
+  while( command ){
+    while( column1 ) cmd = 'r';
+    while( column2 ) cmd = 'p';
+    while( column3 ) cmd = 's';
+  }
   
-  // compare to threshold
-  if( r >= tone_threshold ) {
-    // start recording if in wait mode
-    if( mode == 0 ) startRecording();
+  switch( cmd ){
+    case 'r' :
+      // start recording if in wait mode
+      if( mode == 0 ) startRecording();
+      break;
+    case 'p':
+      // start playing if in wait mode
+      if( mode == 0 ) startPlaying();
+      break;
+    case 's':
+      // stop recording if recording
+      if( mode == 1 ) stopRecording();
+      // stop playing if playing
+      if( mode == 2 ) stopPlaying();
+      break;
   }
-  if( p >= tone_threshold ){
-    // start playing if in wait mode
-    if( mode == 0 ) startPlaying();
-  }
-  if( s >= tone_threshold ){
-    // stop recording if recording
-    if( mode == 1 ) stopRecording();
-    // stop playing if playing
-    if( mode == 2 ) stopPlaying();
-  }  
 
   // If we're playing or recording, carry on...
   if (mode == 1) {
@@ -198,25 +184,22 @@ void startRecording() {
 
 // Read in another block of recorded data
 void continueRecording() {
-  
+  // Read a value from the mic jack
   char digit = readValue();
 
-  // print the key, if any found437
+  // Write the key, if any found
   if ((digit > 0)) {
-    past = digit;
     frec.write(digit);
     Serial.print("  --> Key: ");
     Serial.print(digit);
-    Serial.println(" written to file.");
-    //delay(100);
+    Serial.println(" heard from file.");
   }
 }
 
 // Stop recording and close the file
 void stopRecording() {
-  // Signify stop recording by serial output and turning LED off
+  // Signify stop recording by serial output
   Serial.println("stopRecording");
-  //digitalWrite(led, LOW);
   
   // Close the file and update the mode
   if (mode == 1) {
@@ -233,18 +216,18 @@ void saveFile(File file) {
     if (file.available()) {
       // Read first byte to determine length of desired name
       int nameLen = file.read() - 48;
-      // Create an array of that length plus 5 for terminating char and .RAW
+      // Create an array of that length plus 1 for terminating char
       char filename[nameLen+5];
-      // Create static length array
-      //char filename[100];
-      // set to empty string so has reference
+      // Set to empty string so has reference
       strcpy(filename, "");
-      // read the name in one char at a time and add it to filename variable
-      for( int i = 0; i < nameLen; i++){
-        char value = file.read();
+      // Read the name in one char at a time and add it to filename variable
+      for( int i = 0; i < (nameLen) ; i++){
+        char value, h1, h2;
+        h1 = file.read();
+        h2 = file.read();
+        value = convertToChar(h1, h2);
         strncat(filename, &value, 1);
       }
-      strcat(filename, ".RAW");
       // output name for testing
       Serial.print("File saved as ");
       Serial.println(filename);
@@ -267,23 +250,23 @@ void saveFile(File file) {
         Serial.println("File could not be opened for copy");
       }
       fnew.close();
+      Serial.println("Data successfully saved.");
     } // if (file.available())
   } // if(file)
 } // saveFile( File file)
 
 // Initial steps needed to play the file
 void startPlaying() {
-  // Signify start playing by serial output and turning LED on
+  // Signify start playing by serial output
   Serial.println("startPlaying");
-  //digitalWrite(led, HIGH);
   
   // Get file name
-  //char *fname = getName();
-  //Serial.println(fname);
+  char *fname = getName();
+  Serial.println(fname);
   
   // Open file
-  fply = SD.open("temp.RAW");
-  //fply = SD.open(fname);
+  //fply = SD.open("temp.RAW");
+  fply = SD.open(fname);
   
   // Check if file opened correctly and update mode
   if (fply) {
@@ -294,43 +277,6 @@ void startPlaying() {
   }
 }
 
-// Read in the description
-char * getName() {
-  Serial.println("Please enter the desired file name");
-  Serial.println("Enter the length and name followed by the stop signal");
-  bool done = false;
-  char name[100];
-  strcpy(name, "");
-  while( !done ) {
-    float s1;
-    char digit = readValue();
-    
-    s1 = stp.read();
-    
-    if (s1 >= tone_threshold) {
-       done = true;
-    }
-    
-  if ( digit == past ) digit = 0;
-  
-    // print the key, if any found437
-    if ((digit > 0)) {
-      past = digit;
-      strncat(name, &digit, 1);
-      Serial.print("  Value: ");
-      Serial.print(digit);
-      Serial.println(" added to name.");
-      //delay(100);
-    } // if
-  } // while
-  
-  // Add .RAW extention
-  strcat(name, ".RAW");
-  
-  // Return name
-  Serial.println(name);
-  return name;
-}
 
 // Check if the end has been reached, stop if yes continue if no
 void continuePlaying() {
@@ -438,13 +384,37 @@ void continuePlaying() {
 
 // Stop playing the file
 void stopPlaying() {
-  // Signify stop playing by serial output and turning LED off
+  // Signify stop playing by serial output
   Serial.println("stopPlaying");
-  //digitalWrite(led, LOW);
   
   // Close file and update mode
   if (mode == 2) fply.close();
   mode = 0;
+}
+
+// Read in the description
+char * getName() {
+  // Get length
+  int nameLen = readValue() - 48;
+  // Create an array of that length plus 1 for terminating char
+  char filename[nameLen+5];
+  // Set to empty string so has reference
+  strcpy(filename, "");
+  // Read the name in one char at a time and add it to filename variable
+  for( int i = 0; i < (nameLen) ; i++){
+    char value, h1, h2;
+    h1 = readValue();
+    h2 = readValue();
+    Serial.println(h1);
+    Serial.println(h2);
+    value = convertToChar(h1, h2);
+    Serial.println(value);
+    strncat(filename, &value, 1);
+  }
+  // output name for testing
+  Serial.print("File to play ");
+  Serial.println(filename);
+  return filename;
 }
 
 // Returns the char associated with the given signal
@@ -477,6 +447,111 @@ char readValue() {
   }
   
   return digit;
+}
+
+char convertToChar(char h1, char h2){
+  char val = 0x00;
+  switch( h1 ){
+      case '1' :
+        val = val | 0x10;
+        break;
+      case '2' :
+        val = val | 0x20;
+        break;
+      case '3' :
+        val = val | 0x30;
+        break;
+      case '4' :
+        val = val | 0x40;
+        break;
+      case '5' :
+        val = val | 0x50;
+        break;
+      case '6' :
+        val = val | 0x60;
+        break;
+      case '7' :
+        val = val | 0x70;
+        break;
+      case '8' :
+        val = val | 0x80;
+        break;
+      case '9' :
+        val = val | 0x90;
+        break;
+      case '0' :
+        val = val | 0x00;
+        break;
+      case 'A' :
+        val = val | 0xA0;
+        break;
+      case 'B' :
+        val = val | 0xB0;
+        break;
+      case 'C' :
+        val = val | 0xC0;
+        break;
+      case 'D' :
+        val = val | 0xD0;
+        break;
+      case 'E' :
+        val = val | 0xE0;
+        break;
+      case 'F' :
+        val = val | 0xF0;
+        break;
+    }
+    switch( h2 ){
+      case '1' :
+        val = val | 0x01;
+        break;
+      case '2' :
+        val = val | 0x02;
+        break;
+      case '3' :
+        val = val | 0x03;
+        break;
+      case '4' :
+        val = val | 0x04;
+        break;
+      case '5' :
+        val = val | 0x05;
+        break;
+      case '6' :
+        val = val | 0x06;
+        break;
+      case '7' :
+        val = val | 0x07;
+        break;
+      case '8' :
+        val = val | 0x08;
+        break;
+      case '9' :
+        val = val | 0x09;
+        break;
+      case '0' :
+        val = val | 0x00;
+        break;
+      case 'A' :
+        val = val | 0x0A;
+        break;
+      case 'B' :
+        val = val | 0x0B;
+        break;
+      case 'C' :
+        val = val | 0x0C;
+        break;
+      case 'D' :
+        val = val | 0x0D;
+        break;
+      case 'E' :
+        val = val | 0x0E;
+        break;
+      case 'F' :
+        val = val | 0x0F;
+        break;
+    }
+    return val;
 }
 
 
