@@ -147,10 +147,6 @@ void loop() {
       if( mode == 2 ) stopPlaying();
       break;
   }
-  
-  if( Serial.available() ) {
-    if( Serial.read() == 'p' ) startPlaying();
-  }
 
   // If we're playing or recording, carry on...
   if (mode == 1) {
@@ -196,7 +192,7 @@ void continueRecording() {
     frec.write(digit);
     Serial.print("  --> Key: ");
     Serial.print(digit);
-    Serial.println(" heard from file.");
+    Serial.println(" heard from browser.");
   }
 }
 
@@ -208,14 +204,14 @@ void stopRecording() {
   // Close the file and update the mode
   if (mode == 1) {
     frec.close();
-    saveFile(frec);
+    saveFile();
   }
   mode = 0;
 }
 
 // Save the just recorded file under the user specified name
-void saveFile(File file) {
-  file = SD.open("temp.RAW");
+void saveFile() {
+  File file = SD.open("temp.RAW");
   if(file){
     if (file.available()) {
       // Read first byte to determine length of desired name
@@ -265,28 +261,21 @@ void startPlaying() {
   Serial.println("startPlaying");
   
   // Get file name
-  //char *fname = getName();
+  char *fname = "";
+  //fname = getName();
   //Serial.println(fname);
   
   // Open file
-  //fply = SD.open("temp.RAW");
   fply = SD.open("temp.RAW");
+  //fply = SD.open(fname);
   
   // Check if file opened correctly and update mode
   if (fply) {
-//      AudioNoInterrupts();  // disable audio library momentarily
-//      sine1.frequency(1993);
-//      sine1.amplitude(0.4);
-//      sine2.frequency(1336);
-//      sine2.amplitude(0.45);
-//      AudioInterrupts();    // enable, both tones will start together
-//      delay(110);           // let the sound play for 0.1 second
-//      AudioNoInterrupts();
-//      sine1.amplitude(0);
-//      sine2.amplitude(0);
-//      AudioInterrupts();
-//      delay(40);            // make sure we have 0.05 second silence after
+    // Give user time to accept mic use
     delay(5000);
+    
+    // Signal start recording
+    playNote('R');
     mode = 2;
   } 
   else {
@@ -298,100 +287,10 @@ void startPlaying() {
 // Check if the end has been reached, stop if yes continue if no
 void continuePlaying() {
   if (fply.available()) {
-    int low=0;
-    int high=0;
     // Read in a value from the file
     char key = fply.read();
-    // Match the character to the correct tones
-    switch( key ){
-      case '1' :
-        low = 697;
-        high = 1209;
-        break;
-      case '2' :
-        low = 697;
-        high = 1336;
-        break;
-      case '3' :
-        low = 697;
-        high = 1477;
-        break;
-      case '4' :
-        low = 770;
-        high = 1209;
-        break;
-      case '5' :
-        low = 770;
-        high = 1336;
-        break;
-      case '6' :
-        low = 770;
-        high = 1477;
-        break;
-      case '7' :
-        low = 852;
-        high = 1209;
-        break;
-      case '8' :
-        low = 852;
-        high = 1336;
-        break;
-      case '9' :
-        low = 852;
-        high = 1477;
-        break;
-      case '0' :
-        low = 941;
-        high = 1336;
-        break;
-      case 'A' :
-        low = 697;
-        high = 1633;
-        break;
-      case 'B' :
-        low = 770;
-        high = 1633;
-        break;
-      case 'C' :
-        low = 852;
-        high = 1633;
-        break;
-      case 'D' :
-        low = 941;
-        high = 1633;
-        break;
-      case 'E' :
-        low = 941;
-        high = 1209;
-        break;
-      case 'F' :
-        low = 941;
-        high = 1477;
-        break;
-    }
-
-    // Play the DTMF tone specified by the file
-    if (low > 0 && high > 0) {
-      Serial.print("Output sound for key ");
-      Serial.print(key);
-      Serial.print(", low freq=");
-      Serial.print(low);
-      Serial.print(", high freq=");
-      Serial.print(high);
-      Serial.println();
-      AudioNoInterrupts();  // disable audio library momentarily
-      sine1.frequency(low);
-      sine1.amplitude(0.4);
-      sine2.frequency(high);
-      sine2.amplitude(0.45);
-      AudioInterrupts();    // enable, both tones will start together
-      delay(110);           // let the sound play for 0.1 second
-      AudioNoInterrupts();
-      sine1.amplitude(0);
-      sine2.amplitude(0);
-      AudioInterrupts();
-      delay(40);            // make sure we have 0.05 second silence after
-    }
+    // Play that value
+    playNote(key);
   } 
   else {
     fply.close();
@@ -465,6 +364,113 @@ char readValue() {
   }
   
   return digit;
+}
+
+void playNote(char note){
+  int low=0;
+  int high=0;
+  // Match the character to the correct tones
+  switch( note ){
+    case '1' :
+      low = 697;
+      high = 1209;
+      break;
+    case '2' :
+      low = 697;
+      high = 1336;
+      break;
+    case '3' :
+      low = 697;
+      high = 1477;
+      break;
+    case '4' :
+      low = 770;
+      high = 1209;
+      break;
+    case '5' :
+      low = 770;
+      high = 1336;
+      break;
+    case '6' :
+      low = 770;
+      high = 1477;
+      break;
+    case '7' :
+      low = 852;
+      high = 1209;
+      break;
+    case '8' :
+      low = 852;
+      high = 1336;
+      break;
+    case '9' :
+      low = 852;
+      high = 1477;
+      break;
+    case '0' :
+      low = 941;
+      high = 1336;
+      break;
+    case 'A' :
+      low = 697;
+      high = 1633;
+      break;
+    case 'B' :
+      low = 770;
+      high = 1633;
+      break;
+    case 'C' :
+      low = 852;
+      high = 1633;
+      break;
+    case 'D' :
+      low = 941;
+      high = 1633;
+      break;
+    case 'E' :
+      low = 941;
+      high = 1209;
+      break;
+    case 'F' :
+      low = 941;
+      high = 1477;
+      break;
+    case 'R' :
+      low = 1993;
+      high = 1209;
+      break;
+    case 'P' :
+      low = 1993;
+      high = 1336;
+      break;
+    case 'S' :
+      low = 1993;
+      high = 1477;
+      break;
+  }
+
+  // Play the DTMF tone specified by the file
+  if (low > 0 && high > 0) {
+    Serial.print("Output sound for key ");
+    Serial.print(note);
+    Serial.print(", low freq=");
+    Serial.print(low);
+    Serial.print(", high freq=");
+    Serial.print(high);
+    Serial.println();
+    AudioNoInterrupts();  // disable audio library momentarily
+    sine1.frequency(low);
+    sine1.amplitude(0.4);
+    sine2.frequency(high);
+    sine2.amplitude(0.45);
+    AudioInterrupts();    // enable, both tones will start together
+    delay(110);           // let the sound play for 0.1 second
+    AudioNoInterrupts();
+    sine1.amplitude(0);
+    sine2.amplitude(0);
+    AudioInterrupts();
+    delay(40);            // make sure we have 0.05 second silence after
+  }
 }
 
 char convertToChar(char h1, char h2){
@@ -569,7 +575,8 @@ char convertToChar(char h1, char h2){
         val = val | 0x0F;
         break;
     }
-    return val;
+    if( val > 0x00 ) return val;
+    else return 0x00;
 }
 
 
