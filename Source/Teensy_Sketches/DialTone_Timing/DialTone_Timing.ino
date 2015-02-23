@@ -147,6 +147,10 @@ void loop() {
       if( mode == 2 ) stopPlaying();
       break;
   }
+  
+  if( Serial.available() ) {
+    if( Serial.read() == 'p' ) startPlaying();
+  }
 
   // If we're playing or recording, carry on...
   if (mode == 1) {
@@ -261,15 +265,28 @@ void startPlaying() {
   Serial.println("startPlaying");
   
   // Get file name
-  char *fname = getName();
-  Serial.println(fname);
+  //char *fname = getName();
+  //Serial.println(fname);
   
   // Open file
   //fply = SD.open("temp.RAW");
-  fply = SD.open(fname);
+  fply = SD.open("temp.RAW");
   
   // Check if file opened correctly and update mode
   if (fply) {
+//      AudioNoInterrupts();  // disable audio library momentarily
+//      sine1.frequency(1993);
+//      sine1.amplitude(0.4);
+//      sine2.frequency(1336);
+//      sine2.amplitude(0.45);
+//      AudioInterrupts();    // enable, both tones will start together
+//      delay(110);           // let the sound play for 0.1 second
+//      AudioNoInterrupts();
+//      sine1.amplitude(0);
+//      sine2.amplitude(0);
+//      AudioInterrupts();
+//      delay(40);            // make sure we have 0.05 second silence after
+    delay(5000);
     mode = 2;
   } 
   else {
@@ -333,7 +350,7 @@ void continuePlaying() {
         break;
       case 'B' :
         low = 770;
-        high = 11633;
+        high = 1633;
         break;
       case 'C' :
         low = 852;
@@ -397,6 +414,7 @@ char * getName() {
   // Get length
   int nameLen = readValue() - 48;
   // Create an array of that length plus 1 for terminating char
+  Serial.println(nameLen);
   char filename[nameLen+5];
   // Set to empty string so has reference
   strcpy(filename, "");
