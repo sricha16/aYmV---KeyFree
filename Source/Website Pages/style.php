@@ -39,7 +39,7 @@
   			
   			/*TEXT*/
   			color: #F2C409;
-  			font-family: fantasy;  // WAs CURSIVE LOLS 
+  			font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;  // WAs CURSIVE LOLS 
 		}
 		
 		.message{

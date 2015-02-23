@@ -7,10 +7,13 @@ function DTMF(samplerate,peakFilterSensitivity,repeatMin,downsampleRate,threshol
   self.downsampleRate = downsampleRate || 1
   self.samplerate = samplerate / self.downsampleRate
   self.frequencyTable = {
+    //0: {1951: "R", 2097: "P", 2229: "S", 9999: "x"},
+    //0: {1209: "R", 1336: "P", 1477: "S", 1633: "x"},
     697: {1209: "1", 1336: "2", 1477: "3", 1633: "A"}, 
     770: {1209: "4", 1336: "5", 1477: "6", 1633: "B"},
     852: {1209: "7", 1336: "8", 1477: "9", 1633: "C"},
-    941: {1209: "*", 1336: "0", 1477: "#", 1633: "D"}
+    941: {1209: "#", 1336: "0", 1477: "*", 1633: "D"},
+    1993: {1209: "R", 1336: "P", 1477: "S", 1633: "x"}
   }
   self.lowFrequencies = []
   for(var key in self.frequencyTable) self.lowFrequencies.push(parseInt(key))
@@ -20,7 +23,7 @@ function DTMF(samplerate,peakFilterSensitivity,repeatMin,downsampleRate,threshol
   self.threshold = threshold || 0
   self.repeatCounter = 0
   self.firstPreviousValue = ""
-  self.goertzel = new Goertzel(self.allFrequencies,self.samplerate,self.threshold)
+  self.goertzel = new Goertzel(self.allFrequencies, self.samplerate, self.threshold)
   self.repeatMin = repeatMin
 
   self.energyProfileToCharacter = function(register){
