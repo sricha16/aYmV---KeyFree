@@ -64,10 +64,11 @@
 			
 			function decryptTest()
 			{
-				var desHex = stringToHex(description);
+				/*var desHex = stringToHex(description);
 				desHex = description.length.toString() + desHex;
 				desHex = 'P' + desHex;
 				genDialTones(desHex, 0);
+				*/
 				
 				//var description = $('#description').val();
 				var ct = b64;
@@ -109,6 +110,7 @@
 				desHex = description.length.toString() + desHex;
 				desHex = 'P' + desHex;
 				genDialTones(desHex, 0);
+				$('#playing').html("playing: " + desHex);
 				
 				if (!navigator.getUserMedia)
 				    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
@@ -125,10 +127,13 @@
 			{
 				//strange problem where a '0' is consistently prepended as the first character.
 				//the following two lines remove that zero.
+				
 				if(output.charAt(0) === '0')
 				    output = output.substr(1);
-				output = output.replace(/#/g,'f');		//replacing all # with f and * with e HERE
-				output= output.replace(/\*/g,'e');
+				if(output.charAt(output.length-1) === 'S')
+				    output = output.substr(0,output.length-1);
+				output = output.replace(/#/g,'e');		//replacing all # with f and * with e HERE
+				output= output.replace(/\*/g,'f');
 				$('#cleanedHex').html("cleaned hex: " + output);
 				  b64 = btoa(String.fromCharCode.apply(null,
 				    output.replace(/\r|\n/g, "").replace(/([\da-fA-F]{2}) ?/g, "0x$1 ").replace(/ +$/, "").split(" "))
@@ -162,11 +167,11 @@
 				   //alert('value: ' + value);
 				   //output += value;
 				    //$('#DTMFinput').html(output);
-				    //if(started){
+				    if(started){
 				    output += value;
 				    $('#DTMFinput').html(output);
-				    //}
-				    /*if(value == "R")
+				    }
+				    if(value == "R")
 				    	//need to read in first value which indicates ascii size of des length
 				    	//ignore the next few characters...
 				  	started = true;
@@ -174,7 +179,7 @@
 				    	started = false;
 				    	hexToB64();
 				    }
-				    */
+				    
 				    
 				}
 				recorder.onaudioprocess = function(e){
@@ -196,12 +201,13 @@
 			<input type="text" class="input-box" id="description" placeholder="Description"></input><br>
 			<input type="text" class="input-box" id="ct" placeholder="Ciphertext"></input><br>
 			<button class="button-style" onclick="listenForMic()">Retrieve</button><br>
-			<button class="button-style" onclick="hexToB64()">to base64</button><br>
+			<!-- <button class="button-style" onclick="hexToB64()">to base64</button><br>  -->
 			<p class="message" id="retrieved"></p>
 			<p class="message" id="DTMFinput"></p>
 			<p class="message" id="cleanedHex"></p>
 			<p class="message" id="b64"></p>
 			<p class="message" id="decrypted"></p>
+			<p class="message" id="playing"></p>
 			
 		</p>
 	</body>
