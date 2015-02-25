@@ -60,14 +60,12 @@ const int myInput = AUDIO_INPUT_MIC;
 // Remember which mode we're doing
 int mode = 0;  // 0=stopped, 1=recording, 2=playing
 
-// The file where data is stored
+// File objects for recording, storing, and playing data
 File frec;
-
-// The file to save the data under the new name
-File fnew;
-
-// The file to play
 File fply;
+
+// The file name to play
+//char *filename;
 
 // The threshold for the signals
 const float tone_threshold = 0.3;
@@ -161,9 +159,8 @@ void loop() {
 
 // Initial steps required to record
 void startRecording() {
-  // Signify the start of recording via serial output and turning LED on
+  // Signify the start of recording via serial output
   Serial.println("startRecording");
-  //digitalWrite(led, HIGH);
   
   // Check if file already exists, delete it if it does
   if (SD.exists("temp.RAW")) {
@@ -186,14 +183,13 @@ void startRecording() {
 void continueRecording() {
   // Read a value from the mic jack
   char digit = readValue();
-
-  // Write the key, if any found
-  if ((digit > 0)) {
-    frec.write(digit);
-    Serial.print("  --> Key: ");
-    Serial.print(digit);
-    Serial.println(" heard from browser.");
-  }
+  frec.write(digit);
+  Serial.print("  --> Key: ");
+  Serial.print(digit);
+  Serial.println(" heard from browser.");
+  
+  // Check if stop Signal
+  if( digit == 'S' ) stopRecording();
 }
 
 // Stop recording and close the file
@@ -201,18 +197,91 @@ void stopRecording() {
   // Signify stop recording by serial output
   Serial.println("stopRecording");
   
-  // Close the file and update the mode
+  // Close the file and save the recorded data under the user specified name
   if (mode == 1) {
     frec.close();
     saveFile();
   }
+  // Update the mode
+  mode = 0;
+}
+
+// Initial steps needed to play the file
+void startPlaying() {
+  // Signify start playing by serial output
+  Serial.println("startPlaying");
+  
+  int nameLen = readValue() - 48;
+
+  // Create an array of that length plus 1 for terminating char
+  Serial.println(nameLen);
+  char filename[nameLen+5];
+  // Set to empty string so has reference
+  strcpy(filename, "");
+  // Read the name in one char at a time and add it to filename variable
+  for( int i = 0; i < (nameLen) ; i++) {
+    char value, h1, h2;
+    h1 = readValue();
+    h2 = readValue();
+    //Serial.println(h1);
+    //Serial.println(h2);
+    value = convertToChar(h1, h2);
+    Serial.println(value);
+    if( value > 0 ) strncat(filename, &value, 1);
+  }
+  // output name for testing
+  Serial.print("File to play: ");
+  Serial.println(filename);
+  
+  // Open file
+  fply = SD.open(filename);
+  //fply = SD.open(fname);
+  
+  // Check if file opened correctly and update mode
+  if (fply) {
+    // Give user time to accept mic use
+    delay(5000);
+    
+    // Signal start recording
+    playNote('R');
+    mode = 2;
+  } 
+  else {
+    Serial.println("File could not be opened for playing");
+  }
+}
+
+
+// Check if the end has been reached, stop if yes continue if no
+void continuePlaying() {
+  if (fply.available()) {
+    // Read in a value from the file
+    char data = fply.read();
+    // Play that value
+    playNote(data);
+  } 
+  else {
+    fply.close();
+    mode = 0;
+  }
+}
+
+// Stop playing the file
+void stopPlaying() {
+  // Signify stop playing by serial output
+  Serial.println("stopPlaying");
+  
+  // Close file and update mode
+  if (mode == 2) fply.close();
   mode = 0;
 }
 
 // Save the just recorded file under the user specified name
 void saveFile() {
   File file = SD.open("temp.RAW");
+  // Check that the file opened correctly
   if(file){
+    // Check that there is data in the file
     if (file.available()) {
       // Read first byte to determine length of desired name
       int nameLen = file.read() - 48;
@@ -238,7 +307,7 @@ void saveFile() {
         SD.remove(filename);
       }
       // Open the file to write to
-      fnew = SD.open(filename, FILE_WRITE);
+      File fnew = SD.open(filename, FILE_WRITE);
       if(fnew) {
         // Copy rest of data to a new file with specified name
         while( file.available() ) {
@@ -250,119 +319,46 @@ void saveFile() {
         Serial.println("File could not be opened for copy");
       }
       fnew.close();
+      file.close();
       Serial.println("Data successfully saved.");
     } // if (file.available())
   } // if(file)
 } // saveFile( File file)
 
-// Initial steps needed to play the file
-void startPlaying() {
-  // Signify start playing by serial output
-  Serial.println("startPlaying");
-  
-  // Get file name
-  char *fname = "";
-  //fname = getName();
-  //Serial.println(fname);
-  
-  // Open file
-  fply = SD.open("temp.RAW");
-  //fply = SD.open(fname);
-  
-  // Check if file opened correctly and update mode
-  if (fply) {
-    // Give user time to accept mic use
-    delay(5000);
-    
-    // Signal start recording
-    playNote('R');
-    mode = 2;
-  } 
-  else {
-    Serial.println("File could not be opened for playing");
-  }
-}
-
-
-// Check if the end has been reached, stop if yes continue if no
-void continuePlaying() {
-  if (fply.available()) {
-    // Read in a value from the file
-    char key = fply.read();
-    // Play that value
-    playNote(key);
-  } 
-  else {
-    fply.close();
-    mode = 0;
-  }
-}
-
-// Stop playing the file
-void stopPlaying() {
-  // Signify stop playing by serial output
-  Serial.println("stopPlaying");
-  
-  // Close file and update mode
-  if (mode == 2) fply.close();
-  mode = 0;
-}
-
-// Read in the description
-char * getName() {
-  // Get length
-  int nameLen = readValue() - 48;
-  // Create an array of that length plus 1 for terminating char
-  Serial.println(nameLen);
-  char filename[nameLen+5];
-  // Set to empty string so has reference
-  strcpy(filename, "");
-  // Read the name in one char at a time and add it to filename variable
-  for( int i = 0; i < (nameLen) ; i++){
-    char value, h1, h2;
-    h1 = readValue();
-    h2 = readValue();
-    Serial.println(h1);
-    Serial.println(h2);
-    value = convertToChar(h1, h2);
-    Serial.println(value);
-    strncat(filename, &value, 1);
-  }
-  // output name for testing
-  Serial.print("File to play ");
-  Serial.println(filename);
-  return filename;
-}
-
 // Returns the char associated with the given signal
 char readValue() {  
   char digit = 0;  
-  
-  while( row1 ) {
-    while( column1 ) digit = '1';
-    while( column2 ) digit = '2';
-    while( column3 ) digit = '3';
-    while( column4 ) digit = 'A';
+  while( digit <= 0 ) {
+    while( row1 ) {
+      while( column1 ) digit = '1';
+      while( column2 ) digit = '2';
+      while( column3 ) digit = '3';
+      while( column4 ) digit = 'A';
+    }
+    while( row2 ) {
+      while( column1 ) digit = '4';
+      while( column2 ) digit = '5';
+      while( column3 ) digit = '6';
+      while( column4 ) digit = 'B';
+    }
+    while( row3 ) {
+      while( column1 ) digit = '7';
+      while( column2 ) digit = '8';
+      while( column3 ) digit = '9';
+      while( column4 ) digit = 'C';
+    }
+    while( row4 ) {
+      while( column1 ) digit = 'E';
+      while( column2 ) digit = '0';
+      while( column3 ) digit = 'F';
+      while( column4 ) digit = 'D';
+    }
+    while( command ) {
+      while( column1 ) digit = 'R';
+      while( column2 ) digit = 'P';
+      while( column3 ) digit = 'S';
+    }
   }
-  while( row2 ) {
-    while( column1 ) digit = '4';
-    while( column2 ) digit = '5';
-    while( column3 ) digit = '6';
-    while( column4 ) digit = 'B';
-  }
-  while( row3 ) {
-    while( column1 ) digit = '7';
-    while( column2 ) digit = '8';
-    while( column3 ) digit = '9';
-    while( column4 ) digit = 'C';
-  }
-  while( row4 ) {
-    while( column1 ) digit = 'E';
-    while( column2 ) digit = '0';
-    while( column3 ) digit = 'F';
-    while( column4 ) digit = 'D';
-  }
-  
   return digit;
 }
 
@@ -469,7 +465,7 @@ void playNote(char note){
     sine1.amplitude(0);
     sine2.amplitude(0);
     AudioInterrupts();
-    delay(40);            // make sure we have 0.05 second silence after
+    delay(40);            // make sure we have 0.04 second silence after
   }
 }
 
