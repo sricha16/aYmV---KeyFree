@@ -85,7 +85,7 @@
 			
 			function listenForMic(){
 			
-			
+				//alert('retrieve pressed');
 				var description = $('#description').val();
 				//get ciphertext
 				var ct = $('#ct').val();
@@ -109,6 +109,7 @@
 				var desHex = stringToHex(description);
 				desHex = description.length.toString() + desHex;
 				desHex = 'P' + desHex;
+				//alert('about to play desHex');
 				genDialTones(desHex, 0);
 				$('#playing').html("playing: " + desHex);
 				
@@ -143,9 +144,10 @@
 				  decryptTest();
 			}
 
+			//success funciton should be moved to dtmfMethods.js because verifying password also requires listening and code is duplicated
+			//test if moving breaks things when with Waldorf
 			function success(e)
 			{
-				var count = 0;
 				window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
 				var context = new AudioContext();
 				var volume = context.createGain();
@@ -164,16 +166,11 @@
 				//DTMF(samplerate, peakFilterSensitivity, repeatMin, downsampleRate, threshold)
 				var dtmf = new DTMF(context.sampleRate, 0, 6, 1, 0);  //does not sample well with only 44100Hz. context.sampleRate = 48000Hz
 				dtmf.onDecode = function(value){
-				   //alert('value: ' + value);
-				   //output += value;
-				    //$('#DTMFinput').html(output);
 				    if(started){
 				    output += value;
 				    $('#DTMFinput').html(output);
 				    }
 				    if(value == "R")
-				    	//need to read in first value which indicates ascii size of des length
-				    	//ignore the next few characters...
 				  	started = true;
 				    if(value == "S"){
 				    	started = false;
@@ -189,6 +186,7 @@
 				volume.connect (recorder);
 				recorder.connect (context.destination) ;
 			}
+			
 			
 		</script>
 		

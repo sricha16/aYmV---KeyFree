@@ -111,21 +111,22 @@
 			{
 				var oscillator = window.audioContext.createOscillator();
 				var osc= window.audioContext.createOscillator();
-				
+
 				oscillator.frequency.value = low;
 				oscillator.connect(window.audioContext.destination);
 				//firefox does not support .noteOn and .noteOff, but can handle .start and .stop
 				oscillator.start(window.audioContext.currentTime);
 				oscillator.stop(window.audioContext.currentTime + .11);	             //THIS IS THE DURATION OF THE NOTE		
-				
+
 				osc.frequency.value = high;
 				osc.connect(window.audioContext.destination);
 				osc.start(window.audioContext.currentTime);
 				osc.stop(window.audioContext.currentTime + .11);  //.25 s = 250 ms   THIS IS THE DURATION OF THE NOTE
-				
+
 				if(num+1 < hexVal.length)
 					setTimeout(function(){ genDialTones(hexVal, num+1); }, 150); //250 ms   THIS IS HOW LONG IT WAITS TO PLAY THE NEXT NOTE
 				else
-					;//alert('Transfer has completed successfully! :) ');
+					//;//alert('Transfer has completed successfully! :) ');
+					$('#info').html('Done!');
 			
 			}	
