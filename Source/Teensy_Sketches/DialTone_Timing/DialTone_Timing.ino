@@ -261,8 +261,7 @@ void continuePlaying() {
     playNote(data);
   } 
   else {
-    fply.close();
-    mode = 0;
+    stopPlaying();
   }
 }
 
@@ -272,7 +271,10 @@ void stopPlaying() {
   Serial.println("stopPlaying");
   
   // Close file and update mode
-  if (mode == 2) fply.close();
+if (mode == 2){
+   fply.close();
+   playNote('S');
+}
   mode = 0;
 }
 
