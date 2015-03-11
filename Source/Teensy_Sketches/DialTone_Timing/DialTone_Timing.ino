@@ -84,6 +84,8 @@ void setup() {
   while (!Serial) ;
   delay(100);
   
+  Serial.println("Serial is working");
+  
   // Setting frequency and cycles for 16 hex tones
   row1.frequency(697, 21);
   row2.frequency(770, 23);
@@ -122,7 +124,7 @@ void setup() {
 
 void loop() {
   char cmd = 0;
-  
+  //startRecording();
   while( command ){
     while( column1 ) cmd = 'r';
     while( column2 ) cmd = 'p';

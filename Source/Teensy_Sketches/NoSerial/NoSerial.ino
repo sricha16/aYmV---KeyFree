@@ -60,9 +60,6 @@ int mode = 0;  // 0=stopped, 1=recording, 2=playing
 File frec;
 File fply;
 
-// The file name to play
-//char *filename;
-
 // The threshold for the signals
 const float tone_threshold = 0.3;
 
@@ -76,10 +73,6 @@ void setup() {
   audioShield.inputSelect(myInput);
   audioShield.volume(0.5);
   audioShield.micGain(0);
-  
-  //This is likely why it won't work without Serial...
-  //while (!Serial) ;
-  //delay(100);
   
   // Setting frequency and cycles for 16 hex tones
   row1.frequency(697, 21);
@@ -156,8 +149,6 @@ void loop() {
 
 // Initial steps required to record
 void startRecording() {
-  // Signify the start of recording via serial output
-  //Serial.println("startRecording");
   
   // Check if file already exists, delete it if it does
   if (SD.exists("temp.RAW")) {
@@ -170,9 +161,6 @@ void startRecording() {
   // Check that the file was open correctly
   if (frec) {
     mode = 1;
-  } 
-  else {
-    //Serial.println("File could not be opened for recording");
   }
 }
 
@@ -180,20 +168,14 @@ void startRecording() {
 void continueRecording() {
   // Read a value from the mic jack
   char digit = readValue();
-  frec.write(digit);
-  //Serial.print("  --> Key: ");
-  //Serial.print(digit);
-  //Serial.println(" heard from browser.");
-  
   // Check if stop Signal
   if( digit == 'S' ) stopRecording();
+  // Write it to the file
+  frec.write(digit);
 }
 
 // Stop recording and close the file
-void stopRecording() {
-  // Signify stop recording by serial output
-  //Serial.println("stopRecording");
-  
+void stopRecording() {  
   // Close the file and save the recorded data under the user specified name
   if (mode == 1) {
     frec.close();
@@ -205,13 +187,10 @@ void stopRecording() {
 
 // Initial steps needed to play the file
 void startPlaying() {
-  // Signify start playing by serial output
-  //Serial.println("startPlaying");
-  
+  // Get the length of the description  
   int nameLen = readValue() - 48;
 
   // Create an array of that length plus 1 for terminating char
-  //Serial.println(nameLen);
   char filename[nameLen+5];
   // Set to empty string so has reference
   strcpy(filename, "");
@@ -220,19 +199,12 @@ void startPlaying() {
     char value, h1, h2;
     h1 = readValue();
     h2 = readValue();
-    //Serial.println(h1);
-    //Serial.println(h2);
     value = convertToChar(h1, h2);
-    //Serial.println(value);
     if( value > 0 ) strncat(filename, &value, 1);
   }
-  // output name for testing
-  //Serial.print("File to play: ");
-  //Serial.println(filename);
   
   // Open file
   fply = SD.open(filename);
-  //fply = SD.open(fname);
   
   // Check if file opened correctly and update mode
   if (fply) {
@@ -242,9 +214,6 @@ void startPlaying() {
     // Signal start recording
     playNote('R');
     mode = 2;
-  } 
-  else {
-    //Serial.println("File could not be opened for playing");
   }
 }
 
@@ -265,10 +234,7 @@ void continuePlaying() {
 }
 
 // Stop playing the file
-void stopPlaying() {
-  // Signify stop playing by serial output
-  //Serial.println("stopPlaying");
-  
+void stopPlaying() {  
   // Close file and update mode
   if (mode == 2){
     fply.close();
@@ -298,9 +264,6 @@ void saveFile() {
         value = convertToChar(h1, h2);
         strncat(filename, &value, 1);
       }
-      // output name for testing
-      //Serial.print("File saved as ");
-      //Serial.println(filename);
       
       // Check to see if a file with that name already exists
       // Deletes file if it does so user can update information
@@ -316,12 +279,8 @@ void saveFile() {
           fnew.write(meow);
         }
       }
-      else {
-        //Serial.println("File could not be opened for copy");
-      }
       fnew.close();
       file.close();
-      //Serial.println("Data successfully saved.");
     } // if (file.available())
   } // if(file)
 } // saveFile( File file)
@@ -448,13 +407,6 @@ void playNote(char note){
 
   // Play the DTMF tone specified by the file
   if (low > 0 && high > 0) {
-    //Serial.print("Output sound for key ");
-    //Serial.print(note);
-    //Serial.print(", low freq=");
-    //Serial.print(low);
-    //Serial.print(", high freq=");
-    //Serial.print(high);
-    //Serial.println();
     AudioNoInterrupts();  // disable audio library momentarily
     sine1.frequency(low);
     sine1.amplitude(0.4);
