@@ -215,6 +215,9 @@ void startPlaying() {
     playNote('R');
     mode = 2;
   }
+  else{
+    playNote('N');
+  }
 }
 
 
@@ -402,6 +405,10 @@ void playNote(char note){
     case 'S' :
       low = 1993;
       high = 1477;
+      break;
+    case 'N' :
+      low = 1993;
+      high = 1633;
       break;
   }
 

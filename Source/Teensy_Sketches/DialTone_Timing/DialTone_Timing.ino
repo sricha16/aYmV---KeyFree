@@ -447,6 +447,10 @@ void playNote(char note){
       low = 1993;
       high = 1477;
       break;
+     case 'N':
+       low = 1993;
+       high = 1633;
+       break;
   }
 
   // Play the DTMF tone specified by the file
