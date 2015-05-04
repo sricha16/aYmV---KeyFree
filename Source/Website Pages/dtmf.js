@@ -13,7 +13,7 @@ function DTMF(samplerate,peakFilterSensitivity,repeatMin,downsampleRate,threshol
     770: {1209: "4", 1336: "5", 1477: "6", 1633: "B"},
     852: {1209: "7", 1336: "8", 1477: "9", 1633: "C"},
     941: {1209: "#", 1336: "0", 1477: "*", 1633: "D"},
-    1993: {1209: "R", 1336: "P", 1477: "S", 1633: "x"}
+    1993: {1209: "R", 1336: "P", 1477: "S", 1633: "N"}
   }
   self.lowFrequencies = []
   for(var key in self.frequencyTable) self.lowFrequencies.push(parseInt(key))

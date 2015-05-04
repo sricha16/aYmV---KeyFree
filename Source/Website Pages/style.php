@@ -7,7 +7,8 @@
 <head>
 	<style>
 		body{
-			background: url(created4.png);
+			background: url(Background.png);
+			background-attachment:fixed;
 			font: 13px 'trebuchet MS', Arial, Helvetica;
 		}
 		
@@ -31,7 +32,7 @@
 			
 			/*FORMATTING*/
 			/*center*/
-			width:960px;
+			width:75%;
   			margin:auto;
   			text-align: center;
   			/*other*/
@@ -39,7 +40,38 @@
   			
   			/*TEXT*/
   			color: #F2C409;
-  			font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;  // WAs CURSIVE LOLS 
+  			font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+		}
+		
+		.text2{
+			/*BACKGROUND*/
+			background-image: url(created.png);
+			
+			/*BORDER*/
+			border-width: 5px;
+			border-style: solid;
+			border-color: #F2C409;
+			/*adds shadow*/
+			box-shadow: 0px 5px 5px #444444;
+			-moz-box-shadow: 0px 5px 5px #444444;
+			-webkit-box-shadow: 0px 5px 5px #444444;
+			/*adds rounded edges*/
+			-moz-border-radius: 10px;
+			-webkit-border-radius: 10px;
+			border-radius: 10px; /* future proofing */
+			-khtml-border-radius: 10px; /* for old Konqueror browsers */
+			
+			/*FORMATTING*/
+			/*center*/
+			width:75%;
+  			margin:auto;
+  			text-align: left;
+  			/*other*/
+  			padding: 10px;
+  			
+  			/*TEXT*/
+  			color: #F2C409;
+  			font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
 		}
 		
 		.message{
@@ -51,7 +83,7 @@
 			
 			/*BACKGROUND*/
 			/*color*/
-			background-color: #4a0087;
+			background-image: url(created.png);
 			/*shadow*/
 			box-shadow: 0px 5px 5px #444444;
 			-moz-box-shadow: 0px 5px 5px #444444;
@@ -61,6 +93,9 @@
 			-webkit-border-radius: 5px;
 			border-radius: 5px; /* future proofing */
 			-khtml-border-radius: 5px; /* for old Konqueror browsers */
+			/*width*/
+			width: 75%;
+			margin: auto;
 		}
 		
 		.input-box{

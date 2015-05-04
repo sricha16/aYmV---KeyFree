@@ -1,3 +1,4 @@
+			// converts from string to hex
 			function stringToHex(str){
 				    var hex = '';
 				    for(var i=0;i<str.length;i++) {
@@ -5,6 +6,7 @@
 				    }
 				    return hex;
 			}
+			// converts from Base64 to hex
 			function b64ToHex(storage)
 			{
 				for (var i = 0, bin = atob(storage.replace(/[ \r\n]+$/, "")), hex = ""; i < bin.length; ++i) 
@@ -15,8 +17,8 @@
 				}
 				return hex;
 			}
-
-			function genDialTones(hexVal, num)
+			// sets two tones based on hex value and calls play method
+			function genDialTones(hexVal, num, flag)
 			{	
 				var high=0;
 				var low=0;
@@ -100,14 +102,18 @@
 				    	low = 1993; //stop
 				    	high = 1336;
 				    	break;
+				    case 'N':
+				    	low = 1993; //file not found
+				    	high = 1633;
+				    	break;
 				    default:
 				    	alert('breaking!');
 				        break;
 				}
-				playTone(low, high, num, hexVal);
+				playTone(low, high, num, hexVal, flag);
 			}
-			
-			function playTone(low, high, num, hexVal)
+			// play both tones based on values passed in
+			function playTone(low, high, num, hexVal, flag)
 			{
 				var oscillator = window.audioContext.createOscillator();
 				var osc= window.audioContext.createOscillator();
@@ -124,9 +130,13 @@
 				osc.stop(window.audioContext.currentTime + .11);  //.25 s = 250 ms   THIS IS THE DURATION OF THE NOTE
 
 				if(num+1 < hexVal.length)
-					setTimeout(function(){ genDialTones(hexVal, num+1); }, 150); //250 ms   THIS IS HOW LONG IT WAITS TO PLAY THE NEXT NOTE
-				else
-					//;//alert('Transfer has completed successfully! :) ');
-					$('#info').html('Done!');
+					setTimeout(function(){ genDialTones(hexVal, num+1, flag); }, 150); //250 ms   THIS IS HOW LONG IT WAITS TO PLAY THE NEXT NOTE
+				else{
+					if(flag === 0)
+						$('#info').html('Done!');
+					else if(flag === 1)
+						$('#info').html('Allow Key-Free to access you microphone now.');
+					
+				}
 			
 			}	

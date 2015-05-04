@@ -22,56 +22,11 @@
 			var started = false;
 			window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
 			
-			// feature detection 
-			/*if (!navigator.getUserMedia)
-			    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
-			                  navigator.mozGetUserMedia || navigator.msGetUserMedia;
+			window.onload = function() { document.getElementById("dKey").focus(); };
 			
-			if (navigator.getUserMedia){
-			    navigator.getUserMedia({audio:true}, success, function(e) {
-			    alert('No mic input. Make sure your Key-Free device is plugged into the mic jack');
-			    });
-			} else alert('getUserMedia not supported in this browser.');
-			*/
-		
-			function decrypt()
+			function decryptTest(ct)
 			{
-				//get url
-				var description = $('#description').val();
-				//get ciphertext
-				var ct = $('#ct').val();
-				//get key
-				var dKey = $('#dKey').val();
-				//create hash of password
-				var key = CryptoJS.SHA256(dKey);
-				//get IV from ct and convert to binary array
-				var iv = CryptoJS.enc.Base64.parse(ct.substring(0, 32));
-				//get ciphertext from ct
-				var ciphertext = ct.substring(32);
-				//decrypt ciphertext using hash of key in CBC mode with random IV
-				var message = CryptoJS.AES.decrypt(ciphertext, key, { mode: CryptoJS.mode.CBC, iv: iv });
-				//convert message into Utf8 from binary array
-				var msg = CryptoJS.enc.Utf8.stringify(message);
-				//output decrypted values
-				//$('#retrieved').html(' IV: ' + tempIV);
-				$('#retrieved').html(msg);		
 
-				var desHex = stringToHex(description);
-				desHex = description.length.toString() + desHex;
-				desHex = 'P' + desHex;
-				genDialTones(desHex, 0);
-			}
-			
-			function decryptTest()
-			{
-				/*var desHex = stringToHex(description);
-				desHex = description.length.toString() + desHex;
-				desHex = 'P' + desHex;
-				genDialTones(desHex, 0);
-				*/
-				
-				//var description = $('#description').val();
-				var ct = b64;
 				//grabs whatever key is resting in the "key" box
 				var dKey = $('#dKey').val();
 				var key = CryptoJS.SHA256(dKey);
@@ -79,38 +34,25 @@
 				var ciphertext = ct.substring(32);
 				var message = CryptoJS.AES.decrypt(ciphertext, key, { mode: CryptoJS.mode.CBC, iv: iv });
 				var msg = CryptoJS.enc.Utf8.stringify(message);
+				if( msg !== "")
+					$('#info').html("Data retrieved successfully!");
+				else
+					$('#info').html("Problem retrieving data. Please try again.");
 				$('#decrypted').html("decrypted data: " + msg );
-				output = "";
+				var info = msg.split('|');
+				document.getElementById("uname").value =info[0];
+				document.getElementById("pass").value =info[1];
 			}
 			
 			function listenForMic(){
-			
-				//alert('retrieve pressed');
+				$('#info').html("Retrieving your information, please wait.");
 				var description = $('#description').val();
-				//get ciphertext
-				var ct = $('#ct').val();
-				//get key
-				var dKey = $('#dKey').val();
-				//create hash of password
-				var key = CryptoJS.SHA256(dKey);
-				//get IV from ct and convert to binary array
-				var iv = CryptoJS.enc.Base64.parse(ct.substring(0, 32));
-				//get ciphertext from ct
-				var ciphertext = ct.substring(32);
-				//decrypt ciphertext using hash of key in CBC mode with random IV
-				var message = CryptoJS.AES.decrypt(ciphertext, key, { mode: CryptoJS.mode.CBC, iv: iv });
-				//convert message into Utf8 from binary array
-				var msg = CryptoJS.enc.Utf8.stringify(message);
-				//output decrypted values
-				//$('#retrieved').html(' IV: ' + tempIV);
-				$('#retrieved').html(msg);	
 				
 				//send play signal and generate tones of description
 				var desHex = stringToHex(description);
 				desHex = description.length.toString() + desHex;
 				desHex = 'P' + desHex;
-				//alert('about to play desHex');
-				genDialTones(desHex, 0);
+				genDialTones(desHex, 0, 1);
 				$('#playing').html("playing: " + desHex);
 				
 				if (!navigator.getUserMedia)
@@ -126,9 +68,6 @@
 			
 			function hexToB64()
 			{
-				//strange problem where a '0' is consistently prepended as the first character.
-				//the following two lines remove that zero.
-				
 				if(output.charAt(0) === '0')
 				    output = output.substr(1);
 				if(output.charAt(output.length-1) === 'S')
@@ -141,13 +80,11 @@
 				  );
 				  $('#b64').html("base64: " + b64);
 				  
-				  decryptTest();
+				  decryptTest(b64);
 			}
-
-			//success funciton should be moved to dtmfMethods.js because verifying password also requires listening and code is duplicated
-			//test if moving breaks things when with Waldorf
 			function success(e)
 			{
+				$('#info').html("Retrieving your information, please wait.");
 				window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
 				var context = new AudioContext();
 				var volume = context.createGain();
@@ -169,6 +106,10 @@
 				    if(started){
 				    output += value;
 				    $('#DTMFinput').html(output);
+				    }
+				    if(value == "N"){
+				        started = false;
+				        $('#info').html("No file under that name. Please resubmit information.");
 				    }
 				    if(value == "R")
 				  	started = true;
@@ -193,20 +134,29 @@
 	</head>
 	<body>
 
-		<br/>
+		<br>
 		<p class = "text"> 
 			<input type="password" class="input-box" id="dKey" placeholder="Key"></input><br>
 			<input type="text" class="input-box" id="description" placeholder="Description"></input><br>
-			<input type="text" class="input-box" id="ct" placeholder="Ciphertext"></input><br>
 			<button class="button-style" onclick="listenForMic()">Retrieve</button><br>
-			<!-- <button class="button-style" onclick="hexToB64()">to base64</button><br>  -->
+			<button class="button-style" onclick="location.reload();">Retrieve Another Password</button><br>
+			<!-- <button class="button-style" onclick="hexToB64()">to base64</button><br>
 			<p class="message" id="retrieved"></p>
 			<p class="message" id="DTMFinput"></p>
 			<p class="message" id="cleanedHex"></p>
 			<p class="message" id="b64"></p>
-			<p class="message" id="decrypted"></p>
 			<p class="message" id="playing"></p>
+			<p class="message" id="decrypted"></p>-->
+			<p></p>
+			<p class="message" id="info"></p>
 			
+		</p>
+		<p class = "text">
+			<b>Retrieved Information:</b><br>
+			Username:
+			<input type="text" class="input-box" id="uname" placeholder="Nothing retrieved yet."></input><br>
+			Password:
+			<input type="text" class="input-box" id="pass" placeholder="Nothing retrieved yet."></input><br>
 		</p>
 	</body>
 </html>

@@ -1,3 +1,5 @@
+// Team KeyFree
+// UWYO Senior Design 2014-2015
 // Dial Tone (DTMF) encoding decoding example.
 //
 // A final version of the code for Waldorf
@@ -15,7 +17,7 @@
 // order data flows, inputs/sources -> processing -> outputs
 //
 AudioInputI2S            audioIn;
-AudioAnalyzeToneDetect   row1;     // 7 tone detectors are needed
+AudioAnalyzeToneDetect   row1;     // 9 tone detectors are needed
 AudioAnalyzeToneDetect   row2;     // to receive DTMF dial tones
 AudioAnalyzeToneDetect   row3;
 AudioAnalyzeToneDetect   row4;
@@ -420,7 +422,7 @@ void playNote(char note){
     sine2.frequency(high);
     sine2.amplitude(0.45);
     AudioInterrupts();    // enable, both tones will start together
-    delay(110);           // let the sound play for 0.1 second
+    delay(110);           // let the sound play for 0.11 second
     AudioNoInterrupts();
     sine1.amplitude(0);
     sine2.amplitude(0);
